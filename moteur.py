@@ -1,24 +1,23 @@
 import pyglet
-from pyglet.window import key
+from pyglet.window import key  #permet de detecter touche du clavier
 from pyglet import shapes
 
 from ui    import MainMenu
 from hud   import HUD
 from menus import OptionsMenu, StatsScreen
 
-WIDTH  = 900
+WIDTH = 900
 HEIGHT = 600
-
-GRAVITY      = 1800
+GRAVITY = 1800
 PLAYER_SPEED = 300
-JUMP_FORCE   = 650
+JUMP_FORCE = 650
 
 
 # ── Entités ────────────────────────────────────────────────────────────────────
 
 class Entity:
     def __init__(self, x, y, w, h, batch):
-        self.x, self.y          = x, y
+        self.x, self.y = x, y
         self.width, self.height = w, h
         self.vel_x = self.vel_y = 0
         self.on_ground = False

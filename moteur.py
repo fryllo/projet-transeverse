@@ -2,9 +2,10 @@ import pyglet
 from pyglet.window import key
 from pyglet import shapes
 
-from ui    import MainMenu
-from hud   import HUD
-from menus import OptionsMenu, StatsScreen
+from ui      import MainMenu
+from hud     import HUD
+from menus   import OptionsMenu, StatsScreen
+from enemies import EnemyManager, Dragon
 
 WIDTH  = 900
 HEIGHT = 600
@@ -88,9 +89,9 @@ class PhysicsWorld:
                     e.x = o.x - e.width if e.vel_x > 0 else o.x + o.width
                     e.vel_x = 0
                 else:
-                    if e.vel_y < 0:  # tombe -> atterrit sur le dessus
+                    if e.vel_y < 0:
                         e.y, e.vel_y, e.on_ground = o.y + o.height, 0, True
-                    else:  # monte -> frappe le dessous
+                    else:
                         e.y, e.vel_y = o.y - e.height, 0
 
 
@@ -121,18 +122,18 @@ class Camera:
 class Game:
 
     def __init__(self):
-        self.window = pyglet.window.Window(WIDTH, HEIGHT, "Platformer Engine", resizable=True)
+        self.window = pyglet.window.Window(WIDTH, HEIGHT, "Cop Adventure", resizable=True)
         self.batch     = pyglet.graphics.Batch()
         self.hud_batch = pyglet.graphics.Batch()
 
-        self.world    = PhysicsWorld()
-        self.camera   = Camera(self.window)
+        self.world         = PhysicsWorld()
+        self.camera        = Camera(self.window)
+        self.enemy_manager = EnemyManager(self.batch)
+
         self._score   = 0
         self._time    = 0.0
         self._running = False
-
-        # Touches pressées — set simple, géré manuellement
-        self._held = set()
+        self._held    = set()
 
         self.create_level()
         self._build_ui()
@@ -140,8 +141,6 @@ class Game:
         self.hud.hide()
 
         pyglet.clock.schedule_interval(self.update, 1 / 60)
-
-        # ── Handlers — définis EN DERNIER pour avoir priorité ─────────────────
 
         @self.window.event
         def on_key_press(symbol, modifiers):
@@ -199,6 +198,11 @@ class Game:
     def create_level(self):
         self.player = Player(100, 60, self.batch)
         self.world.add(self.player)
+
+        # Test : Dragon juste devant le joueur
+        self.enemy_manager.clear()
+        self.enemy_manager.spawn(Dragon, x=300, y=40)
+
         for p in [
             Platform(   0,  0, 2000, 40, self.batch),
             Platform( 200, 150, 200, 20, self.batch),
@@ -255,20 +259,21 @@ class Game:
         self._time += dt
         p = self.player
 
-        # Déplacement horizontal
+        # Déplacement
         p.vel_x = 0
         if key.Q in self._held or key.LEFT in self._held:
             p.vel_x = -PLAYER_SPEED
         if key.D in self._held or key.RIGHT in self._held:
             p.vel_x = PLAYER_SPEED
 
-        # Saut — vérifié chaque frame, pas de discard pour garder la réactivité
+        # Saut
         if (key.SPACE in self._held or key.UP in self._held or key.Z in self._held) and p.on_ground:
             p.vel_y     = JUMP_FORCE
             p.on_ground = False
             p.jumps    += 1
 
         self.world.update(dt)
+        self.enemy_manager.update(dt, self.player)
         self.camera.update(p, dt)
         self.camera.apply(self.world.entities)
 

@@ -1,0 +1,13 @@
+Index: README.md
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+># projet-transeverse
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/README.md b/README.md
+--- a/README.md	(revision ce7662011dadefffc99514923c61812450938b0f)
++++ b/README.md	(date 1775489129053)
+@@ -1,1 +1,0 @@
+-# projet-transeverse
+\ No newline at end of file

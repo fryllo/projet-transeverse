@@ -1,14 +1,11 @@
 import pygame
 
-pygame.init()
 pygame.mixer.init()
 
 # Charger les sons
-#son_bonus = pygame.mixer.Sound("sons/bonus.wav")
-pygame.mixer.music.load("PIANO.wav")
+son_pas = pygame.mixer.Sound("musique/bruit_de_pas.wav")
+son_saut = pygame.mixer.Sound("musique/saut.flac")
 
-# Lancer la musique
-pygame.mixer.music.play(-1)
-
-
-
+# Tu peux aussi régler les volumes ici
+son_pas.set_volume(0.5)
+son_saut.set_volume(0.7)

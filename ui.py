@@ -129,7 +129,7 @@ class MainMenu:
 
         # ── titre ─────────────────────────────────────────────────────────────
         self._title = make_label(
-            "PLATFORMER",
+            "Cop Adventure",
             cx, height - 120,
             batch, group=self._grp_fg,
             font_name=FONT_TITLE, font_size=SIZE_TITLE,
@@ -137,7 +137,7 @@ class MainMenu:
             anchor_x="center", anchor_y="center",
         )
         self._subtitle = make_label(
-            "— engine demo —",
+            "— amuse toi bien —",
             cx, height - 165,
             batch, group=self._grp_fg,
             font_size=13, color=COLOR_TEXT_DIM,

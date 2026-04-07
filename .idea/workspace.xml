@@ -4,9 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="42b37434-76ba-430e-acd7-c42e563fb9a6" name="Changes" comment="hjbh">
+    <list default="true" id="42b37434-76ba-430e-acd7-c42e563fb9a6" name="Changes" comment="prenez cette version sans la musique qui marche pas pour travailler">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/menus.py" beforeDir="false" afterPath="$PROJECT_DIR$/menus.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/background.py" beforeDir="false" afterPath="$PROJECT_DIR$/background.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/moteur.py" beforeDir="false" afterPath="$PROJECT_DIR$/moteur.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ui.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -174,7 +175,15 @@
       <option name="project" value="LOCAL" />
       <updated>1775492879648</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="prenez cette version sans la musique qui marche pas pour travailler">
+      <option name="closed" value="true" />
+      <created>1775586139980</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1775586139982</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -196,11 +205,12 @@
     <MESSAGE value="Initial commit" />
     <MESSAGE value="hjbh" />
     <MESSAGE value="c'est sur pygletmaintenant" />
-    <option name="LAST_COMMIT_MESSAGE" value="c'est sur pygletmaintenant" />
+    <MESSAGE value="prenez cette version sans la musique qui marche pas pour travailler" />
+    <option name="LAST_COMMIT_MESSAGE" value="prenez cette version sans la musique qui marche pas pour travailler" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/projet_transeverse$moteur__3_.coverage" NAME="moteur (3) Coverage Results" MODIFIED="1774012574185" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$USER_HOME$/Downloads" />
-    <SUITE FILE_PATH="coverage/projet_transeverse$moteur.coverage" NAME="moteur Coverage Results" MODIFIED="1775586007644" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/projet_transeverse$moteur.coverage" NAME="moteur Coverage Results" MODIFIED="1775587598536" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/projet_transeverse$main.coverage" NAME="main Coverage Results" MODIFIED="1775507097779" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/projet_transeverse$background.coverage" NAME="background Coverage Results" MODIFIED="1775510272612" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/projet_transeverse$son.coverage" NAME="son Coverage Results" MODIFIED="1775507089747" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/musique" />

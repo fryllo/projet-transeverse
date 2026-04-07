@@ -171,10 +171,14 @@ class MainMenu:
 
     # ── visibilité ────────────────────────────────────────────────────────────
 
+    # Dans ui.py -> classe MainMenu
+
     def show(self):
         self._visible = True
         self._bg.opacity = 230
         self._credits.opacity = 180
+        self._title.opacity = 255
+        self._subtitle.opacity = 255
         for btn in self._buttons:
             btn.set_visible(True)
 
@@ -182,6 +186,8 @@ class MainMenu:
         self._visible = False
         self._bg.opacity = 0
         self._credits.opacity = 0
+        self._title.opacity = 0
+        self._subtitle.opacity = 0
         for btn in self._buttons:
             btn.set_visible(False)
 

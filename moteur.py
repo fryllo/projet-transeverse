@@ -214,6 +214,8 @@ class Game:
         def on_resize(width, height):
             was = self._running
             self._build_ui()
+            if self.level_manager._current_bg:
+                self.level_manager._current_bg.on_resize(width, height)
             if was:
                 self.hud.show()
             else:

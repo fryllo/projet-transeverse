@@ -6,6 +6,7 @@ from ui      import MainMenu
 from hud     import HUD
 from menus   import OptionsMenu, StatsScreen
 from enemies import EnemyManager, Dragon
+from level_system import LevelManager
 
 WIDTH  = 900
 HEIGHT = 600
@@ -123,19 +124,34 @@ class Game:
 
     def __init__(self):
         self.window = pyglet.window.Window(WIDTH, HEIGHT, "Platformer Engine", resizable=True)
-        self.batch     = pyglet.graphics.Batch()
+        self.bg_batch = pyglet.graphics.Batch()
+        self.batch = pyglet.graphics.Batch()
         self.hud_batch = pyglet.graphics.Batch()
 
         self.world         = PhysicsWorld()
         self.camera        = Camera(self.window)
         self.enemy_manager = EnemyManager(self.batch)
 
+        self.PlatformClass = Platform
+        self.PlatformClass = Platform
+
         self._score   = 0
         self._time    = 0.0
         self._running = False
         self._held    = set()
 
-        self.create_level()
+        self.player = Player(100, 60, self.batch)
+        self.world.add(self.player)
+
+        self.level_manager = LevelManager(self)
+        self.level_manager.load(0)
+
+        self.player = Player(100, 60, self.batch)
+        self.world.add(self.player)
+
+        self.level_manager = LevelManager(self)
+        self.level_manager.load(0)
+
         self._build_ui()
         self.main_menu.show()
         self.hud.hide()
@@ -157,6 +173,7 @@ class Game:
         @self.window.event
         def on_draw():
             self.window.clear()
+            self.bg_batch.draw()
             if self._running:
                 self.batch.draw()
             self.hud_batch.draw()

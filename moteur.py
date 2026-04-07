@@ -165,6 +165,8 @@ class Game:
                 self.window.set_fullscreen(not self.window.fullscreen)
             if symbol == key.ESCAPE and self._running:
                 self._on_back_to_main()
+            if symbol == key.TAB and self._running:
+                self.level_manager.next_level()
 
         @self.window.event
         def on_key_release(symbol, modifiers):
@@ -272,6 +274,8 @@ class Game:
     def update(self, dt):
         if not self._running:
             return
+        if self.player.x > self.level_manager.current_level.length - 80:
+            self.level_manager.next_level()
 
         self._time += dt
         p = self.player

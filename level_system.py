@@ -49,10 +49,10 @@ class LevelManager:
             Level(
                 name="Lagune",
                 theme="water",
-                length=2200,
+                length=8000,
                 spawn=(100, 80),
                 platforms=[
-                    (0,   0, 2200, 40),
+                    (0,   0, 8000, 40),
                     (160, 110, 120, 20),
                     (340, 170, 100, 20),
                     (520, 120, 150, 20),
@@ -71,10 +71,10 @@ class LevelManager:
             Level(
                 name="Cieux",
                 theme="sky",
-                length=2200,
+                length=8000,
                 spawn=(100, 120),
                 platforms=[
-                    (0,   0, 260, 40),
+                    (0,   0, 8000, 40),
                     (320, 120, 110, 20),
                     (500, 210, 110, 20),
                     (680, 300, 110, 20),

@@ -1,4 +1,5 @@
 from moteur import Game
+from pnj import NPC
 import pyglet
 
 musique = pyglet.media.load("musique/PIANO.wav")

@@ -23,13 +23,20 @@ class Background:
     def __init__(self, width, height, batch):
         self.width = width
         self.height = height
-        self.batch = batch
         self.layers = []
 
     def add_layer(self, factor: float):
         layer = ParallaxLayer(factor)
         self.layers.append(layer)
         return layer
+
+    def on_resize(self, width, height):
+        self.width = width
+        self.height = height
+        if hasattr(self, 'layers') and self.layers and self.layers[0].items:
+            bg_rect = self.layers[0].items[0][0]
+            bg_rect.width = width
+            bg_rect.height = height
 
     def update(self, camera_x):
         for layer in self.layers:

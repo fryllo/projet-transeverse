@@ -105,8 +105,9 @@ class PhysicsWorld:
 class Camera:
     SMOOTH = 6.0
 
-    def __init__(self, window):
+    def __init__(self, window, level_width=8000):
         self.window   = window
+        self.level_width = level_width
         self.offset_x = 0.0
 
     def reset(self):
@@ -115,6 +116,7 @@ class Camera:
     def update(self, target, dt):
         ideal = target.x + target.width / 2 - self.window.width / 2
         self.offset_x += (ideal - self.offset_x) * self.SMOOTH * dt
+        self.offset_x = max(0, min(self.offset_x, self.level_width))
 
     def apply(self, entities):
         for e in entities:

@@ -281,37 +281,49 @@ class Game:
 
     def _build_ui(self):
         w, h = self.window.width, self.window.height
+        self.hud_batch = pyglet.graphics.Batch()
+
+        # 1. On crée le HUD en premier pour avoir accès à son groupe
         self.hud = HUD(w, h, self.hud_batch, max_hp=100, show_stats=True)
+
+        # 2. Le Game Over
         self.game_over_menu = GameOverMenu(w, h, self.hud_batch,
                                            on_retry=self._on_retry,
                                            on_menu=self._on_back_to_main)
+
+        # 3. Le bouton Portier (bien rattaché au groupe du HUD)
         self.exit_btn = Button(16, h - 110, 80, 40, "PORTIER",
                                self.hud_batch, self.hud._grp, self.hud._grp,
                                on_click=self._on_exit_to_levels)
         self.exit_btn.set_visible(False)
-        self.main_menu    = MainMenu(w, h, self.hud_batch,
-                                     on_play=self._on_play,
-                                     on_options=self._on_options,
-                                     on_quit=pyglet.app.exit)
+
+        # 4. Le menu principal
+        self.main_menu = MainMenu(w, h, self.hud_batch,
+                                  on_play=self._on_play,
+                                  on_options=self._on_options,
+                                  on_quit=pyglet.app.exit)
+
+        # 5. Le choix des niveaux et les autres
         self.level_menu = LevelSelect(w, h, self.hud_batch, on_level_selected=self._on_start_level)
         self.options_menu = OptionsMenu(w, h, self.hud_batch, on_back=self._on_back_to_main)
         self.stats_screen = StatsScreen(w, h, self.hud_batch, on_back=self._on_back_to_main)
-        self.hud          = HUD(w, h, self.hud_batch, max_hp=100, show_stats=True)
 
     # ── Callbacks ─────────────────────────────────────────────────────────────
 
     def _on_play(self):
+        """Quand on clique sur PLAY : on cache le menu et on montre SEULEMENT le choix des niveaux"""
         if not self.game_over_menu._visible:
+            # On cache tout
             self.main_menu.hide()
+            self.options_menu.hide()
+            self.stats_screen.hide()
+            self.hud.hide()
+
+            # On montre uniquement le sélecteur de niveaux
             self.level_menu.show()
-        self.main_menu.hide()
-        self.options_menu.hide()
-        self.level_menu.show()
-        self.stats_screen.hide()
-        self.hud.show()
-        self.camera.reset()
-        self._held.clear()
-        self._running = True
+
+            # TRÈS IMPORTANT : Le jeu ne doit PAS encore tourner
+            self._running = False
 
 
     def _on_start_level(self, level_index):
@@ -348,16 +360,17 @@ class Game:
     def _on_back_to_main(self):
         self._running = False
         self._held.clear()
+
+        # Cache tous les menus possibles
         self.options_menu.hide()
         self.stats_screen.hide()
         self.level_menu.hide()
         self.game_over_menu.hide()
         self.exit_btn.set_visible(False)
-        self._running = False
-        self._held.clear()
         self.hud.hide()
-        self.main_menu.show()
 
+        # Affiche le menu de base
+        self.main_menu.show()
     # ── Boucle ────────────────────────────────────────────────────────────────
 
     def update(self, dt):

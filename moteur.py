@@ -7,6 +7,7 @@ from hud     import HUD
 from menus   import OptionsMenu, StatsScreen
 from enemies import EnemyManager, Dragon
 from level_system import LevelManager
+from ui import MainMenu, LevelSelect, Button
 
 son_pas = pyglet.media.load("musique/bruit_de_pas.wav", streaming=False)
 son_saut = pyglet.media.load("musique/saut.flac", streaming=False)
@@ -200,15 +201,35 @@ class Game:
 
         @self.window.event
         def on_mouse_press(x, y, button, modifiers):
-            self.main_menu.on_mouse_press(x, y, button, modifiers)
-            self.options_menu.on_mouse_press(x, y, button, modifiers)
-            self.stats_screen.on_mouse_press(x, y, button, modifiers)
+            # 1. Priorité absolue aux menus superposés s'ils sont visibles
+            if self.level_menu._visible:
+                self.level_menu.on_mouse_press(x, y, button, modifiers)
+            elif self.options_menu.is_visible:
+                self.options_menu.on_mouse_press(x, y, button, modifiers)
+            elif self.stats_screen.is_visible:
+                self.stats_screen.on_mouse_press(x, y, button, modifiers)
+
+            # 2. Si on est sur le menu principal
+            elif self.main_menu._visible:
+                self.main_menu.on_mouse_press(x, y, button, modifiers)
+
+            # 3. Si on est en train de jouer
+            elif self._running:
+                self.exit_btn.on_mouse_press(x, y, button, modifiers)
 
         @self.window.event
         def on_mouse_release(x, y, button, modifiers):
-            self.main_menu.on_mouse_release(x, y, button, modifiers)
-            self.options_menu.on_mouse_release(x, y, button, modifiers)
-            self.stats_screen.on_mouse_release(x, y, button, modifiers)
+            # On fait exactement le même ordre pour le relâchement du clic
+            if self.level_menu._visible:
+                self.level_menu.on_mouse_release(x, y, button, modifiers)
+            elif self.options_menu.is_visible:
+                self.options_menu.on_mouse_release(x, y, button, modifiers)
+            elif self.stats_screen.is_visible:
+                self.stats_screen.on_mouse_release(x, y, button, modifiers)
+            elif self.main_menu._visible:
+                self.main_menu.on_mouse_release(x, y, button, modifiers)
+            elif self._running:
+                self.exit_btn.on_mouse_release(x, y, button, modifiers)
 
         @self.window.event
         def on_mouse_drag(x, y, dx, dy, buttons, modifiers):
@@ -216,15 +237,25 @@ class Game:
 
         @self.window.event
         def on_resize(width, height):
-            was = self._running
-            self._build_ui()
+            was_running = self._running  # On mémorise l'état
+            self._build_ui()  # On recrée les objets graphiques
+
+            # On remet à jour le fond si nécessaire[cite: 5, 8]
             if self.level_manager._current_bg:
                 self.level_manager._current_bg.on_resize(width, height)
-            if was:
+
+            if was_running:
+                # SI ON JOUAIT : On cache tout sauf le HUD et le bouton PORTIER
+                self.main_menu.hide()
+                self.level_menu.hide()
                 self.hud.show()
+                self.exit_btn.set_visible(True)
+                self._running = True
             else:
+                # SI ON ÉTAIT AU MENU : On affiche le menu
                 self.main_menu.show()
                 self.hud.hide()
+                self.exit_btn.set_visible(False)
 
     # ── Niveau ────────────────────────────────────────────────────────────────
 
@@ -251,11 +282,16 @@ class Game:
 
     def _build_ui(self):
         w, h = self.window.width, self.window.height
-        self.hud_batch    = pyglet.graphics.Batch()
+        self.hud = HUD(w, h, self.hud_batch, max_hp=100, show_stats=True)
+        self.exit_btn = Button(16, h - 110, 80, 40, "PORTIER",
+                               self.hud_batch, self.hud._grp, self.hud._grp,
+                               on_click=self._on_exit_to_levels)
+        self.exit_btn.set_visible(False)
         self.main_menu    = MainMenu(w, h, self.hud_batch,
                                      on_play=self._on_play,
                                      on_options=self._on_options,
                                      on_quit=pyglet.app.exit)
+        self.level_menu = LevelSelect(w, h, self.hud_batch, on_level_selected=self._on_start_level)
         self.options_menu = OptionsMenu(w, h, self.hud_batch, on_back=self._on_back_to_main)
         self.stats_screen = StatsScreen(w, h, self.hud_batch, on_back=self._on_back_to_main)
         self.hud          = HUD(w, h, self.hud_batch, max_hp=100, show_stats=True)
@@ -270,6 +306,25 @@ class Game:
         self.camera.reset()
         self._held.clear()
         self._running = True
+        self.level_menu.show()
+
+    def _on_start_level(self, level_index):
+        """Quand on clique sur Niveau 1, 2 ou 3 dans le menu de sélection"""
+        self.level_menu.hide()
+        self.level_manager.load(level_index)  # Charge le niveau demandé (0, 1 ou 2)
+        self.hud.show()
+        self.camera.reset()
+        self._held.clear()
+        self.exit_btn.set_visible(True)
+        self._running = True
+
+    def _on_exit_to_levels(self):
+        """Quitte le niveau en cours pour revenir au choix des niveaux"""
+        self._running = False
+        self.hud.hide()
+        self.exit_btn.set_visible(False)
+        self.main_menu.hide()# On cache le bouton de sortie
+        self.level_menu.show()
 
     def _on_options(self):
         self.main_menu.hide()
@@ -278,6 +333,8 @@ class Game:
     def _on_back_to_main(self):
         self.options_menu.hide()
         self.stats_screen.hide()
+        self.level_menu.hide()
+        self.exit_btn.set_visible(False)
         self._running = False
         self._held.clear()
         self.hud.hide()

@@ -14,11 +14,13 @@ from pyglet import shapes
 from theme import (
     COLOR_BG, COLOR_ACCENT, COLOR_TEXT, COLOR_TEXT_DIM,
     COLOR_BTN_NORMAL, COLOR_BTN_HOVER, COLOR_BTN_PRESS, COLOR_BTN_BORDER,
-    FONT_TITLE, FONT_UI, SIZE_TITLE, SIZE_BODY,
-    make_label, draw_border,
+    FONT_TITLE, FONT_UI, SIZE_TITLE, SIZE_BODY,SIZE_HEADER,
+    make_label, draw_panel, draw_border,
+
 )
 
 # ── Bouton générique ───────────────────────────────────────────────────────────
+
 
 class Button:
     """Bouton rectangulaire cliquable avec état hover / pressed."""
@@ -214,3 +216,63 @@ class MainMenu:
             return
         for btn in self._buttons:
             btn.on_mouse_release(x, y, button, modifiers)
+
+
+# Dans ui.py (ou à ajouter à la fin du fichier)
+class LevelSelect:
+    PANEL_W = 400
+    PANEL_H = 350
+
+    def __init__(self, width, height, batch, on_level_selected):
+        self._visible = False
+        self._on_level_selected = on_level_selected
+
+        # Groupes pour la superposition
+        self._grp_bg = pyglet.graphics.Group(order=30)
+        self._grp_fg = pyglet.graphics.Group(order=31)
+
+        cx, cy = width // 2, height // 2
+        px, py = cx - self.PANEL_W // 2, cy - self.PANEL_H // 2
+
+        # Fond du menu
+        self._panel = draw_panel(px, py, self.PANEL_W, self.PANEL_H, batch, self._grp_bg)
+        self._title = make_label("CHOISIR NIVEAU", cx, py + self.PANEL_H - 40,
+                                 batch, self._grp_fg, font_name=FONT_TITLE,
+                                 font_size=SIZE_HEADER, color=COLOR_ACCENT, anchor_x="center")
+
+        # Création des 3 boutons de niveau
+        self._buttons = []
+        for i in range(3):
+            btn_y = py + self.PANEL_H - 120 - (i * 70)
+            # On utilise une "closure" (lambda) pour passer l'index du niveau au clic
+            b = Button(cx - 100, btn_y, 200, 50, f"NIVEAU {i + 1}",
+                       batch, self._grp_bg, self._grp_fg,
+                       on_click=lambda idx=i: self._on_level_selected(idx))
+            self._buttons.append(b)
+
+        self.hide()
+
+    def set_visible(self, v):
+        self._visible = v
+        self._panel.opacity = 255 if v else 0
+        self._title.color = (*COLOR_ACCENT[:3], 255 if v else 0)
+        for b in self._buttons:
+            b.set_visible(v)
+
+    def show(self):
+        self.set_visible(True)
+
+    def hide(self):
+        self.set_visible(False)
+
+    def on_mouse_motion(self, x, y, dx, dy):
+        if self._visible:
+            for b in self._buttons: b.on_mouse_motion(x, y, dx, dy)
+
+    def on_mouse_press(self, x, y, button, modifiers):
+        if self._visible:
+            for b in self._buttons: b.on_mouse_press(x, y, button, modifiers)
+
+    def on_mouse_release(self, x, y, button, modifiers):
+        if self._visible:
+            for b in self._buttons: b.on_mouse_release(x, y, button, modifiers)

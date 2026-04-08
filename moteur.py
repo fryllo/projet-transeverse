@@ -7,7 +7,7 @@ from hud     import HUD
 from menus   import OptionsMenu, StatsScreen
 from enemies import EnemyManager, Dragon
 from level_system import LevelManager
-from ui import MainMenu, LevelSelect, Button
+from ui import MainMenu, LevelSelect, Button, GameOverMenu
 
 son_pas = pyglet.media.load("musique/bruit_de_pas.wav", streaming=False)
 son_saut = pyglet.media.load("musique/saut.flac", streaming=False)
@@ -194,33 +194,32 @@ class Game:
             self.hud_batch.draw()
 
         @self.window.event
-        def on_mouse_motion(x, y, dx, dy):
-            self.main_menu.on_mouse_motion(x, y, dx, dy)
-            self.options_menu.on_mouse_motion(x, y, dx, dy)
-            self.stats_screen.on_mouse_motion(x, y, dx, dy)
-
-        @self.window.event
         def on_mouse_press(x, y, button, modifiers):
-            # 1. Priorité absolue aux menus superposés s'ils sont visibles
-            if self.level_menu._visible:
+            # PRIORITÉ 1 : Le Game Over
+            if self.game_over_menu._visible:
+                self.game_over_menu.on_mouse_press(x, y, button, modifiers)
+
+            # PRIORITÉ 2 : Les menus de sélection ou d'options
+            elif self.level_menu._visible:
                 self.level_menu.on_mouse_press(x, y, button, modifiers)
             elif self.options_menu.is_visible:
                 self.options_menu.on_mouse_press(x, y, button, modifiers)
             elif self.stats_screen.is_visible:
                 self.stats_screen.on_mouse_press(x, y, button, modifiers)
 
-            # 2. Si on est sur le menu principal
+            # PRIORITÉ 3 : Menu principal
             elif self.main_menu._visible:
                 self.main_menu.on_mouse_press(x, y, button, modifiers)
 
-            # 3. Si on est en train de jouer
+            # PRIORITÉ 4 : En jeu
             elif self._running:
                 self.exit_btn.on_mouse_press(x, y, button, modifiers)
 
         @self.window.event
         def on_mouse_release(x, y, button, modifiers):
-            # On fait exactement le même ordre pour le relâchement du clic
-            if self.level_menu._visible:
+            if self.game_over_menu._visible:
+                self.game_over_menu.on_mouse_release(x, y, button, modifiers)
+            elif self.level_menu._visible:
                 self.level_menu.on_mouse_release(x, y, button, modifiers)
             elif self.options_menu.is_visible:
                 self.options_menu.on_mouse_release(x, y, button, modifiers)
@@ -283,6 +282,9 @@ class Game:
     def _build_ui(self):
         w, h = self.window.width, self.window.height
         self.hud = HUD(w, h, self.hud_batch, max_hp=100, show_stats=True)
+        self.game_over_menu = GameOverMenu(w, h, self.hud_batch,
+                                           on_retry=self._on_retry,
+                                           on_menu=self._on_back_to_main)
         self.exit_btn = Button(16, h - 110, 80, 40, "PORTIER",
                                self.hud_batch, self.hud._grp, self.hud._grp,
                                on_click=self._on_exit_to_levels)
@@ -299,14 +301,18 @@ class Game:
     # ── Callbacks ─────────────────────────────────────────────────────────────
 
     def _on_play(self):
+        if not self.game_over_menu._visible:
+            self.main_menu.hide()
+            self.level_menu.show()
         self.main_menu.hide()
         self.options_menu.hide()
+        self.level_menu.show()
         self.stats_screen.hide()
         self.hud.show()
         self.camera.reset()
         self._held.clear()
         self._running = True
-        self.level_menu.show()
+
 
     def _on_start_level(self, level_index):
         """Quand on clique sur Niveau 1, 2 ou 3 dans le menu de sélection"""
@@ -326,14 +332,26 @@ class Game:
         self.main_menu.hide()# On cache le bouton de sortie
         self.level_menu.show()
 
+    def _on_retry(self):
+        """Relance le niveau actuel après une mort"""
+        self.game_over_menu.hide()
+        # On recharge le niveau en utilisant l'index actuel du level_manager
+        self.level_manager.load(self.level_manager.index)
+        self.hud.show()
+        self.exit_btn.set_visible(True)
+        self._running = True
+
     def _on_options(self):
         self.main_menu.hide()
         self.options_menu.show()
 
     def _on_back_to_main(self):
+        self._running = False
+        self._held.clear()
         self.options_menu.hide()
         self.stats_screen.hide()
         self.level_menu.hide()
+        self.game_over_menu.hide()
         self.exit_btn.set_visible(False)
         self._running = False
         self._held.clear()
@@ -356,7 +374,7 @@ class Game:
             p.vel_y = JUMP_FORCE
             p.on_ground = False
             p.jumps += 1
-            self.son_saut.play()  # ← AJOUT ICI
+            self.son_saut.play()
 
         moving = p.vel_x != 0 and p.on_ground
 
@@ -383,6 +401,12 @@ class Game:
 
         self.world.update(dt)
         self.enemy_manager.update(dt, self.player)
+        if p.hp <= 0:
+            self._running = False  # On fige le jeu
+            self.exit_btn.set_visible(False)  # On cache le bouton "Portier"
+            self.game_over_menu.show()  # On affiche l'écran rouge de mort
+            p.deaths += 1  # On compte une mort pour les stats
+            return
         self.camera.update(p, dt)
         self.camera.apply(self.world.entities)
 

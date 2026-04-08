@@ -193,6 +193,8 @@ class Game:
 
             if symbol == key.ESCAPE and self._running:
                 self._on_back_to_main()
+            if symbol == key.TAB and self._running:
+                self.level_manager.next_level()
 
             #npc
             if symbol == key.E and self._running:
@@ -315,6 +317,8 @@ class Game:
     def update(self, dt):
         if not self._running:
             return
+        if self.player.x > self.level_manager.current_level.length - 80:
+            self.level_manager.next_level()
 
         self._time += dt
         p = self.player

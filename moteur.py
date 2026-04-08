@@ -8,9 +8,12 @@ from menus   import OptionsMenu, StatsScreen
 from enemies import EnemyManager, Dragon
 from level_system import LevelManager
 
+son_pas = pyglet.media.load("musique/bruit_de_pas.wav", streaming=False)
+son_saut = pyglet.media.load("musique/saut.flac", streaming=False)
+
+
 WIDTH  = 900
 HEIGHT = 600
-
 GRAVITY      = 1800
 PLAYER_SPEED = 300
 JUMP_FORCE   = 650
@@ -146,7 +149,7 @@ class Game:
         self.level_manager = LevelManager(self)
         self.level_manager.load(0)
 
-        self.player = Player(100, 60, self.batch)
+
         self.world.add(self.player)
 
         self.level_manager = LevelManager(self)
@@ -156,6 +159,12 @@ class Game:
         self.main_menu.show()
         self.hud.hide()
 
+        self.son_pas = son_pas
+        self.son_saut = son_saut
+        self._step_timer = 0
+
+
+
         pyglet.clock.schedule_interval(self.update, 1 / 60)
 
         @self.window.event
@@ -163,8 +172,11 @@ class Game:
             self._held.add(symbol)
             if symbol == key.F11:
                 self.window.set_fullscreen(not self.window.fullscreen)
+
             if symbol == key.ESCAPE and self._running:
                 self._on_back_to_main()
+            if symbol == key.TAB and self._running:
+                self.level_manager.next_level()
 
         @self.window.event
         def on_key_release(symbol, modifiers):
@@ -274,9 +286,28 @@ class Game:
     def update(self, dt):
         if not self._running:
             return
+        if self.player.x > self.level_manager.current_level.length - 80:
+            self.level_manager.next_level()
 
         self._time += dt
         p = self.player
+
+        #son
+        if (key.SPACE in self._held or key.UP in self._held or key.Z in self._held) and p.on_ground:
+            p.vel_y = JUMP_FORCE
+            p.on_ground = False
+            p.jumps += 1
+            self.son_saut.play()  # ← AJOUT ICI
+
+        moving = p.vel_x != 0 and p.on_ground
+
+        if moving:
+            self._step_timer -= dt
+            if self._step_timer <= 0:
+                self.son_pas.play()
+                self._step_timer = 0.4  # rythme des pas
+        else:
+            self._step_timer = 0
 
         # Déplacement
         p.vel_x = 0

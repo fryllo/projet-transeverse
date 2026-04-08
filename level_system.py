@@ -27,10 +27,10 @@ class LevelManager:
             Level(
                 name="Prairie",
                 theme="ground",
-                length=2200,
+                length=8000,
                 spawn=(100, 80),
                 platforms=[
-                    (0,   0, 2200, 40),
+                    (0,   0, 8000, 40),
                     (180, 130, 130, 20),
                     (380, 190, 140, 20),
                     (620, 260, 160, 20),
@@ -49,10 +49,10 @@ class LevelManager:
             Level(
                 name="Lagune",
                 theme="water",
-                length=2200,
+                length=8000,
                 spawn=(100, 80),
                 platforms=[
-                    (0,   0, 2200, 40),
+                    (0,   0, 8000, 40),
                     (160, 110, 120, 20),
                     (340, 170, 100, 20),
                     (520, 120, 150, 20),
@@ -71,10 +71,10 @@ class LevelManager:
             Level(
                 name="Cieux",
                 theme="sky",
-                length=2200,
+                length=8000,
                 spawn=(100, 120),
                 platforms=[
-                    (0,   0, 260, 40),
+                    (0,   0, 8000, 40),
                     (320, 120, 110, 20),
                     (500, 210, 110, 20),
                     (680, 300, 110, 20),
@@ -141,9 +141,6 @@ class LevelManager:
         else:
             self._current_bg = BackgroundBuilder.create_sky(self.game.window.width, self.game.window.height, self.game.bg_batch)
 
-    def next_level(self):
-        self.load(self.index + 1)
-
     def update_background(self):
         if self._current_bg:
             self._current_bg.update(self.game.camera.offset_x)
@@ -151,3 +148,6 @@ class LevelManager:
     @property
     def current_level(self):
         return self.levels[self.index]
+
+    def next_level(self):
+        self.load(self.index + 1)

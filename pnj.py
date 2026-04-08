@@ -1,13 +1,15 @@
-import pyglet
+
 from pyglet import shapes
 
-class NPC:
-    def __init__(self, x, y, batch, text):
-        self.x, self.y = x, y
-        self.width, self.height = 40, 60
-        self.text = text
-        self.shape = shapes.Rectangle(x, y, 40, 60, color=(80, 80, 200), batch=batch)
+from moteur import Entity
 
-    def sync_graphics(self, camera_x):
-        self.shape.x = self.x - camera_x
-        self.shape.y = self.y
+
+class NPC(Entity):
+    def __init__(self, x, y, batch, text):
+        super().__init__(x, y, 40, 60, batch)
+        self.shape.color = (80, 80, 200)
+        self.text = text
+        self.solid = False  # IMPORTANT → le joueur peut passer à travers
+
+    def update(self, dt):
+        pass

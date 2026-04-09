@@ -1,12 +1,6 @@
 # enemies.py
 # Système d'ennemis : mêlée et rangé
-#
-# Usage dans moteur.py :
-#   from enemies import Dragon, Elfe, NuageMechant, Aigle, Requin, Champignon
-#   self.enemy_manager = EnemyManager(self.batch, self.world)
-#   self.enemy_manager.spawn(Dragon, x=500, y=40)
-#   # Dans update() :
-#   self.enemy_manager.update(dt, self.player)
+# MODIFIÉ : animations 3 frames, shape caché, destroy() corrigé, hits_rect() ajouté
 
 import pyglet
 from pyglet import shapes
@@ -14,35 +8,53 @@ import math
 
 # ── Constantes ────────────────────────────────────────────────────────────────
 
-PIXEL_PER_METER = 40   # 1 mètre = 40 pixels
+PIXEL_PER_METER = 40
 
-MELEE_RANGE_M  = 10    # mètres
-RANGED_RANGE_M = 20    # mètres
+MELEE_RANGE_M  = 10
+RANGED_RANGE_M = 20
 
 MELEE_RANGE_PX  = MELEE_RANGE_M  * PIXEL_PER_METER   # 400 px
 RANGED_RANGE_PX = RANGED_RANGE_M * PIXEL_PER_METER   # 800 px
 
-ATTACK_COOLDOWN = 1.5   # secondes entre chaque attaque
+ATTACK_COOLDOWN = 1.5
+
+
+# ── Animation 3 frames ────────────────────────────────────────────────────────
+
+class SimpleAnimation:
+    """Gère un sprite animé sur 3 frames chargées depuis des fichiers image."""
+
+    def __init__(self, x, y, frame_paths, frame_duration=0.2, batch=None):
+        self.frames = [pyglet.image.load(path) for path in frame_paths]
+        self.sprite = pyglet.sprite.Sprite(self.frames[0], x=x, y=y, batch=batch)
+        self.frame_index = 0
+        self.timer = 0.0
+        self.frame_duration = frame_duration
+
+    def update(self, dt):
+        self.timer += dt
+        if self.timer >= self.frame_duration:
+            self.timer = 0
+            self.frame_index = (self.frame_index + 1) % len(self.frames)
+            self.sprite.image = self.frames[self.frame_index]
+
+    def set_position(self, x, y):
+        self.sprite.x = int(x)
+        self.sprite.y = int(y)
+
+    def delete(self):
+        self.sprite.delete()
 
 
 # ── Projectile ────────────────────────────────────────────────────────────────
 
 class Projectile:
-    """
-    Projectile tiré par un ennemi rangé.
-    color   : couleur du projectile
-    damage  : dégâts infligés au joueur
-    speed   : vitesse en px/s
-    radius  : rayon visuel
-    """
-
     def __init__(self, x, y, dx, dy, damage, speed, color, radius, batch):
         self.x, self.y   = float(x), float(y)
         self.damage      = damage
         self.speed       = speed
         self.radius      = radius
         self.alive       = True
-        # Normaliser la direction
         length = math.hypot(dx, dy) or 1
         self.vx = dx / length * speed
         self.vy = dy / length * speed
@@ -53,15 +65,19 @@ class Projectile:
         self.y += self.vy * dt
         self.shape.x = int(self.x)
         self.shape.y = int(self.y)
-        # Supprimer si hors écran (large marge)
         if self.x < -500 or self.x > 5000 or self.y < -200 or self.y > 2000:
             self.destroy()
 
     def hits(self, player):
-        """Retourne True si le projectile touche le joueur."""
+        """Collision circulaire contre le joueur."""
         cx = player.x + player.width  / 2
         cy = player.y + player.height / 2
         return math.hypot(self.x - cx, self.y - cy) < self.radius + player.width / 2
+
+    def hits_rect(self, entity):
+        """Collision point-dans-rectangle contre un ennemi (pour les tirs du joueur)."""
+        return (entity.x < self.x < entity.x + entity.width and
+                entity.y < self.y < entity.y + entity.height)
 
     def destroy(self):
         self.alive = False
@@ -71,20 +87,6 @@ class Projectile:
 # ── Classe de base Ennemi ─────────────────────────────────────────────────────
 
 class Enemy:
-    """
-    Classe de base pour tous les ennemis.
-
-    Attributs à surcharger dans les sous-classes :
-        COLOR       : couleur (R, G, B)
-        WIDTH       : largeur en px
-        HEIGHT      : hauteur en px
-        HP          : points de vie
-        SPEED       : vitesse de déplacement px/s
-        DAMAGE      : dégâts par attaque
-        ATTACK_CD   : cooldown d'attaque en secondes
-        IS_RANGED   : True = rangé, False = mêlée
-    """
-
     COLOR     = (180, 60, 60)
     WIDTH     = 36
     HEIGHT    = 48
@@ -94,6 +96,14 @@ class Enemy:
     ATTACK_CD = 1.5
     IS_RANGED = False
 
+    # Chemins des frames par défaut (à surcharger dans chaque sous-classe)
+    FRAME_PATHS = [
+        "assets/dragon_frame1.png",
+        "assets/dragon_frame2.png",
+        "assets/dragon_frame3.png",
+    ]
+    FRAME_DURATION = 0.2
+
     def __init__(self, x, y, batch):
         self.x, self.y          = float(x), float(y)
         self.width, self.height = self.WIDTH, self.HEIGHT
@@ -101,21 +111,31 @@ class Enemy:
         self.max_hp             = self.HP
         self.alive              = True
         self._cd                = 0.0
-        self._dir               = 1       # direction de patrouille
+        self._dir               = 1
         self._patrol_origin     = float(x)
         self._patrol_range      = RANGED_RANGE_PX if self.IS_RANGED else MELEE_RANGE_PX
         self._batch             = batch
 
-        # Corps
+        # Corps (hitbox invisible — remplacé par le sprite animé)
         self.shape = shapes.Rectangle(
             int(x), int(y), self.WIDTH, self.HEIGHT,
             color=self.COLOR, batch=batch
         )
+        self.shape.visible = False  # Le bloc coloré est caché, le sprite prend le relais
+
         # Barre de vie (fond rouge + barre verte)
         self._hp_bg  = shapes.Rectangle(int(x), int(y) + self.HEIGHT + 4,
                                          self.WIDTH, 5, color=(120, 30, 30), batch=batch)
         self._hp_bar = shapes.Rectangle(int(x), int(y) + self.HEIGHT + 4,
                                          self.WIDTH, 5, color=(60, 200, 60), batch=batch)
+
+        # Animation 3 frames
+        self.animation = SimpleAnimation(
+            x, y,
+            frame_paths=self.FRAME_PATHS,
+            frame_duration=self.FRAME_DURATION,
+            batch=batch,
+        )
 
     # ── Vie ───────────────────────────────────────────────────────────────────
 
@@ -133,6 +153,8 @@ class Enemy:
         self.alive = False
         for s in (self.shape, self._hp_bg, self._hp_bar):
             s.batch = None
+        if hasattr(self, 'animation'):
+            self.animation.delete()
 
     # ── Synchronisation graphique ─────────────────────────────────────────────
 
@@ -144,6 +166,7 @@ class Enemy:
         self._hp_bg.y  = iy + self.HEIGHT + 4
         self._hp_bar.x = ix
         self._hp_bar.y = iy + self.HEIGHT + 4
+        self.animation.set_position(ix, iy)
 
     # ── Patrouille ────────────────────────────────────────────────────────────
 
@@ -162,7 +185,6 @@ class Enemy:
     # ── Attaque (à surcharger) ────────────────────────────────────────────────
 
     def attack(self, player, projectiles):
-        """Appelé quand l'ennemi peut attaquer. Surcharger dans les sous-classes."""
         pass
 
     # ── Update ────────────────────────────────────────────────────────────────
@@ -176,11 +198,9 @@ class Enemy:
         detect   = self._patrol_range
 
         if dist < detect:
-            # En portée : attaque si cooldown prêt
             if self._cd <= 0:
                 self.attack(player, projectiles)
                 self._cd = self.ATTACK_CD
-            # Mêlée : se rapproche du joueur
             if not self.IS_RANGED:
                 direction = 1 if player.x > self.x else -1
                 self.x += self.SPEED * direction * dt
@@ -188,6 +208,7 @@ class Enemy:
             self._patrol(dt)
 
         self._sync()
+        self.animation.update(dt)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -195,10 +216,6 @@ class Enemy:
 # ══════════════════════════════════════════════════════════════════════════════
 
 class Dragon(Enemy):
-    """
-    Rangé — souffle de feu.
-    Tire une boule de feu orange rapide.
-    """
     COLOR     = (200, 60,  20)
     WIDTH     = 50
     HEIGHT    = 40
@@ -207,6 +224,12 @@ class Dragon(Enemy):
     DAMAGE    = 20
     ATTACK_CD = 2.0
     IS_RANGED = True
+    FRAME_PATHS = [
+        "assets/dragon_frame1.png",
+        "assets/dragon_frame2.png",
+        "assets/dragon_frame3.png",
+    ]
+    FRAME_DURATION = 0.2
 
     def attack(self, player, projectiles):
         dx = (player.x + player.width  / 2) - (self.x + self.WIDTH  / 2)
@@ -214,19 +237,13 @@ class Dragon(Enemy):
         projectiles.append(Projectile(
             self.x + self.WIDTH / 2, self.y + self.HEIGHT / 2,
             dx, dy,
-            damage=self.DAMAGE,
-            speed=400,
-            color=(255, 120, 30),
-            radius=10,
+            damage=self.DAMAGE, speed=400,
+            color=(255, 120, 30), radius=10,
             batch=self._batch,
         ))
 
 
 class Elfe(Enemy):
-    """
-    Rangé — flèche magique.
-    Tire une flèche verte précise et rapide.
-    """
     COLOR     = (60, 180, 80)
     WIDTH     = 28
     HEIGHT    = 50
@@ -235,6 +252,12 @@ class Elfe(Enemy):
     DAMAGE    = 12
     ATTACK_CD = 1.2
     IS_RANGED = True
+    FRAME_PATHS = [
+        "assets/elfe_frame1.png",
+        "assets/elfe_frame2.png",
+        "assets/elfe_frame3.png",
+    ]
+    FRAME_DURATION = 0.18
 
     def attack(self, player, projectiles):
         dx = (player.x + player.width  / 2) - (self.x + self.WIDTH  / 2)
@@ -242,19 +265,13 @@ class Elfe(Enemy):
         projectiles.append(Projectile(
             self.x + self.WIDTH / 2, self.y + self.HEIGHT / 2,
             dx, dy,
-            damage=self.DAMAGE,
-            speed=550,
-            color=(100, 255, 120),
-            radius=6,
+            damage=self.DAMAGE, speed=550,
+            color=(100, 255, 120), radius=6,
             batch=self._batch,
         ))
 
 
 class NuageMechant(Enemy):
-    """
-    Rangé — éclair.
-    Tire un éclair jaune vers le bas (tombe sur le joueur).
-    """
     COLOR     = (180, 180, 200)
     WIDTH     = 60
     HEIGHT    = 30
@@ -263,9 +280,25 @@ class NuageMechant(Enemy):
     DAMAGE    = 15
     ATTACK_CD = 1.8
     IS_RANGED = True
+    FRAME_PATHS = [
+        "assets/nuage_mechant_frame1.png",
+        "assets/nuage_mechant_frame2.png",
+        "assets/nuage_mechant_frame3.png",
+    ]
+    FRAME_DURATION = 0.25
+
+    def __init__(self, x, y, batch):
+        super().__init__(x, y, batch)
+        self._osc_timer = 0.0
+
+    def update(self, dt, player, projectiles):
+        if not self.alive:
+            return
+        self._osc_timer += dt
+        self.y += math.sin(self._osc_timer * 2) * 15 * dt
+        super().update(dt, player, projectiles)
 
     def attack(self, player, projectiles):
-        # L'éclair tombe verticalement depuis le nuage vers le joueur
         tx = player.x + player.width / 2
         ty = player.y + player.height
         dx = tx - (self.x + self.WIDTH / 2)
@@ -273,23 +306,17 @@ class NuageMechant(Enemy):
         projectiles.append(Projectile(
             self.x + self.WIDTH / 2, self.y,
             dx, dy,
-            damage=self.DAMAGE,
-            speed=500,
-            color=(255, 255, 60),
-            radius=7,
+            damage=self.DAMAGE, speed=500,
+            color=(255, 255, 60), radius=7,
             batch=self._batch,
         ))
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# ── ENNEMIS MÊLÉE ─────────────────────────────────────────────────────────────
+# ── ENNEMIS MÊLÉE ─────────────────────────────────────────────════════════════
 # ══════════════════════════════════════════════════════════════════════════════
 
 class Aigle(Enemy):
-    """
-    Mêlée — coup de griffe.
-    Rapide et agile, fait peu de dégâts mais attaque vite.
-    """
     COLOR     = (160, 120, 40)
     WIDTH     = 34
     HEIGHT    = 30
@@ -298,18 +325,19 @@ class Aigle(Enemy):
     DAMAGE    = 8
     ATTACK_CD = 0.8
     IS_RANGED = False
+    FRAME_PATHS = [
+        "assets/aigle_frame1.png",
+        "assets/aigle_frame2.png",
+        "assets/aigle_frame3.png",
+    ]
+    FRAME_DURATION = 0.15
 
     def attack(self, player, projectiles):
-        # Griffe : dégâts directs si très proche
         if abs(self.x - player.x) < self.WIDTH + player.width:
             player.hp = max(0, player.hp - self.DAMAGE)
 
 
 class Requin(Enemy):
-    """
-    Mêlée — morsure.
-    Lent mais très puissant, gros dégâts.
-    """
     COLOR     = (60, 100, 180)
     WIDTH     = 50
     HEIGHT    = 36
@@ -318,6 +346,12 @@ class Requin(Enemy):
     DAMAGE    = 25
     ATTACK_CD = 2.0
     IS_RANGED = False
+    FRAME_PATHS = [
+        "assets/requin_frame1.png",
+        "assets/requin_frame2.png",
+        "assets/requin_frame3.png",
+    ]
+    FRAME_DURATION = 0.18
 
     def attack(self, player, projectiles):
         if abs(self.x - player.x) < self.WIDTH + player.width:
@@ -325,10 +359,6 @@ class Requin(Enemy):
 
 
 class Champignon(Enemy):
-    """
-    Mêlée — spores empoisonnées (corps à corps).
-    Inflige des dégâts modérés rapidement.
-    """
     COLOR     = (140, 60, 160)
     WIDTH     = 30
     HEIGHT    = 38
@@ -337,6 +367,12 @@ class Champignon(Enemy):
     DAMAGE    = 10
     ATTACK_CD = 1.0
     IS_RANGED = False
+    FRAME_PATHS = [
+        "assets/champignon_frame1.png",
+        "assets/champignon_frame2.png",
+        "assets/champignon_frame3.png",
+    ]
+    FRAME_DURATION = 0.22
 
     def attack(self, player, projectiles):
         if abs(self.x - player.x) < self.WIDTH + player.width:
@@ -348,18 +384,6 @@ class Champignon(Enemy):
 # ══════════════════════════════════════════════════════════════════════════════
 
 class EnemyManager:
-    """
-    Gère tous les ennemis et projectiles en jeu.
-
-    Usage :
-        manager = EnemyManager(batch)
-        manager.spawn(Dragon, x=600, y=40)
-        manager.spawn(Requin, x=1200, y=40)
-
-        # Chaque frame :
-        manager.update(dt, player)
-    """
-
     def __init__(self, batch):
         self._batch      = batch
         self.enemies     = []
@@ -371,18 +395,15 @@ class EnemyManager:
         return e
 
     def update(self, dt, player):
-        # Mettre à jour les ennemis
         for e in self.enemies:
             e.update(dt, player, self.projectiles)
 
-        # Mettre à jour les projectiles
         for p in self.projectiles:
             p.update(dt)
             if p.alive and p.hits(player):
                 player.hp = max(0, player.hp - p.damage)
                 p.destroy()
 
-        # Nettoyer les morts
         self.enemies     = [e for e in self.enemies     if e.alive]
         self.projectiles = [p for p in self.projectiles if p.alive]
 
@@ -393,4 +414,3 @@ class EnemyManager:
             p.destroy()
         self.enemies.clear()
         self.projectiles.clear()
-

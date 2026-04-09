@@ -1,6 +1,8 @@
 from moteur import Game
 import pyglet
 
+
+
 musique = pyglet.media.load("musique/PIANO.wav")
 player_musique = pyglet.media.Player()
 player_musique.queue(musique)

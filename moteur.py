@@ -1,6 +1,7 @@
 import pyglet
 from pyglet.window import key
 from pyglet import shapes
+from npc import NPC
 
 from ui      import MainMenu
 from hud     import HUD
@@ -8,6 +9,8 @@ from menus   import OptionsMenu, StatsScreen
 from enemies import EnemyManager, Dragon
 from level_system import LevelManager
 from ui import MainMenu, LevelSelect, Button, GameOverMenu
+from npc import NPC
+import pyglet
 
 son_pas = pyglet.media.load("musique/bruit_de_pas.wav", streaming=False)
 son_saut = pyglet.media.load("musique/saut.flac", streaming=False)
@@ -77,7 +80,7 @@ class PhysicsWorld:
 
     def update(self, dt):
         for e in self.entities:
-            if isinstance(e, Platform):
+            if isinstance(e, Platform) or isinstance(e, NPC):
                 continue
             e.vel_y -= GRAVITY * dt
             e.x += e.vel_x * dt
@@ -86,6 +89,14 @@ class PhysicsWorld:
             e.on_ground = False
             self._resolve(e, "y")
             e.sync_graphics()
+
+    def update(self, dt):
+        for e in self.entities:
+            if isinstance(e, Platform):
+                continue
+            if isinstance(e, NPC):
+                e.sync_graphics()
+                continue
 
     @staticmethod
     def _overlap(a, b):
@@ -169,6 +180,25 @@ class Game:
         self.main_menu.show()
         self.hud.hide()
 
+        # label dialogue APRÈS _build_ui
+        self.dialogue_label = pyglet.text.Label(
+            "",
+            font_name="Arial",
+            font_size=18,
+            bold=True,
+            color=(255, 255, 255, 255),
+            x=self.window.width // 2,
+            y=80,
+            anchor_x='center',
+            anchor_y='center',
+            batch=self.hud_batch
+        )
+        self.current_npc = None
+        self.show_dialogue = False
+
+        self.main_menu.show()
+        self.hud.hide()
+
         self.son_pas = son_pas
         self.son_saut = son_saut
         self._step_timer = 0
@@ -201,13 +231,13 @@ class Game:
 
             #npc
             if symbol == key.E and self._running:
-                if self.current_npc:
+                if self.show_dialogue:
+                    self.show_dialogue = False
+                    self.dialogue_label.text = ""
+                elif self.current_npc:
                     self.show_dialogue = True
-                    self.dialogue_label.text = self.current_npc.text
-
-            if symbol == key.E and self.show_dialogue:
-                self.show_dialogue = False
-                self.dialogue_label.text = ""
+                    t = self.current_npc.text
+                    self.dialogue_label.text = " | ".join(t) if isinstance(t, list) else t
 
         @self.window.event
         def on_key_release(symbol, modifiers):

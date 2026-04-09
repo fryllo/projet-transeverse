@@ -9,3 +9,32 @@ player_musique.play()
 
 son_pas = pyglet.media.load("musique/bruit_de_pas.wav", streaming=False)
 son_saut = pyglet.media.load("musique/saut.flac", streaming=False)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

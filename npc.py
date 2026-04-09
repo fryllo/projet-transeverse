@@ -1,7 +1,7 @@
 
 from pyglet import shapes
 
-from moteur import Entity
+from entity import Entity
 
 
 class NPC(Entity):

@@ -2,7 +2,8 @@
 from pyglet import shapes
 from enemies import Dragon, Elfe, NuageMechant, Aigle, Requin, Champignon
 from background import BackgroundBuilder
-from pnj import NPC
+from npc import NPC
+
 
 
 
@@ -57,6 +58,7 @@ class LevelManager:
             ),
             Level(
                 name="Lagune",
+                npcs=[],
                 theme="water",
                 length=8000,
                 spawn=(100, 80),
@@ -81,6 +83,7 @@ class LevelManager:
             Level(
                 name="Cieux",
                 theme="sky",
+                npcs=[],
                 length=8000,
                 spawn=(100, 120),
                 platforms=[
@@ -132,7 +135,7 @@ class LevelManager:
         self.game.player.on_ground = False
         self.game.player.hp = 100
 
-        for text, x, y in level.npcs:
+        for name, text, x, y in level.npcs:
             npc = NPC(x, y, self.game.batch, text)
             self.game.world.add(npc)
 

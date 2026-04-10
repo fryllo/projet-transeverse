@@ -276,3 +276,62 @@ class LevelSelect:
     def on_mouse_release(self, x, y, button, modifiers):
         if self._visible:
             for b in self._buttons: b.on_mouse_release(x, y, button, modifiers)
+
+
+class GameOverMenu:
+    PANEL_W = 400
+    PANEL_H = 300
+
+    def __init__(self, width, height, batch, on_retry, on_menu):
+        self._visible = False
+        self._grp_bg = pyglet.graphics.Group(order=40)
+        self._grp_fg = pyglet.graphics.Group(order=41)
+
+        cx, cy = width // 2, height // 2
+        px, py = cx - self.PANEL_W // 2, cy - self.PANEL_H // 2
+
+        self._panel = draw_panel(px, py, self.PANEL_W, self.PANEL_H, batch, self._grp_bg)
+        self._title = make_label("GAME OVER", cx, py + self.PANEL_H - 50,
+                                 batch, self._grp_fg, font_name=FONT_TITLE,
+                                 font_size=SIZE_HEADER, color=(255, 50, 50, 255), anchor_x="center")
+
+        # Bouton Rejouer
+        self._btn_retry = Button(cx - 100, py + 130, 200, 50, "REJOUER",
+                                 batch, self._grp_bg, self._grp_fg, on_click=on_retry)
+
+        # Bouton Menu Principal
+        self._btn_menu = Button(cx - 100, py + 60, 200, 50, "MENU",
+                                batch, self._grp_bg, self._grp_fg, on_click=on_menu)
+        self.hide()
+
+    def set_visible(self, v):
+        self._visible = v
+        self._panel.opacity = 230 if v else 0  # Un peu transparent pour voir le lieu du crime
+        self._title.color = (255, 50, 50, 255 if v else 0)
+        self._btn_retry.set_visible(v)
+        self._btn_menu.set_visible(v)
+
+    def show(self):
+        self.set_visible(True)
+
+    def hide(self):
+        self.set_visible(False)
+        self._panel.opacity = 0
+        self._title.color = (255, 50, 50, 0)
+        self._btn_retry.set_visible(False)
+        self._btn_menu.set_visible(False)
+
+    def on_mouse_motion(self, x, y, dx, dy):
+        if self._visible:
+            self._btn_retry.on_mouse_motion(x, y, dx, dy)
+            self._btn_menu.on_mouse_motion(x, y, dx, dy)
+
+    def on_mouse_press(self, x, y, button, modifiers):
+        if self._visible:
+            self._btn_retry.on_mouse_press(x, y, button, modifiers)
+            self._btn_menu.on_mouse_press(x, y, button, modifiers)
+
+    def on_mouse_release(self, x, y, button, modifiers):
+        if self._visible:
+            self._btn_retry.on_mouse_release(x, y, button, modifiers)
+            self._btn_menu.on_mouse_release(x, y, button, modifiers)

@@ -1,6 +1,7 @@
 import pyglet
 from pyglet.window import key
 from pyglet import shapes
+from pyglet.gl import GL_NEAREST
 
 from ui      import MainMenu
 from hud     import HUD
@@ -39,12 +40,145 @@ class Entity:
         self.shape.y = self.y
 
 
+# ── Animation du joueur ───────────────────────────────────────────────────────
+
+class PlayerSprite:
+    """
+    Gère les sprites animés du joueur selon :
+      - le niveau (monture : cheval / dauphin / phénix)
+      - l'état   : marche (3 frames), saut, chute
+      - la direction : droite (_r) ou gauche (_left)
+    """
+
+    FRAME_DURATION = 0.2   # secondes entre chaque frame de marche
+
+    # Sprites par monture : (walk_r1..3, walk_l1..3, jump, fall)
+    MOUNTS = {
+        "cheval":  "greta_cheval",
+        "dauphin": "greta_dauphin",
+        "phenix":  "greta_phenix",
+    }
+
+    def __init__(self, batch):
+        self._batch    = batch
+        self._sprite   = None
+        self._images   = {}      # cache des images chargées
+        self._mount    = "cheval"
+        self._facing   = 1       # 1=droite, -1=gauche
+        self._state    = "walk"  # walk | jump | fall
+        self._frame    = 0
+        self._timer    = 0.0
+
+    def load_mount(self, mount_name):
+        """Charge toutes les images d'une monture dans le cache."""
+        self._mount = mount_name
+        self._images.clear()
+        prefix = self.MOUNTS.get(mount_name, "greta_cheval")
+        keys = {}
+        for i in range(1, 4):
+            keys[f"walk_r{i}"] = f"assets/{prefix}_frame{i}.png"
+        keys["jump"] = f"assets/{prefix}_saut.png"
+        keys["fall"] = f"assets/{prefix}_chute.png"
+
+        for k, path in keys.items():
+            try:
+                img = pyglet.image.load(path)
+                tex = img.get_texture()
+                tex.min_filter = GL_NEAREST
+                tex.mag_filter = GL_NEAREST
+                self._images[k] = img
+            except Exception as e:
+                print(f"[PlayerSprite] {path} : {e}")
+                self._images[k] = None
+
+        first = self._images.get("walk_r1")
+        if first:
+            if self._sprite is None:
+                self._sprite = pyglet.sprite.Sprite(first, x=0, y=0, batch=self._batch)
+            else:
+                self._sprite.image = first
+        self._frame  = 0
+        self._timer  = 0.0
+        self._facing = 1
+        self._state  = "walk"
+
+    def _get_image(self):
+        """Retourne l'image correspondant à l'état actuel (toujours version droite)."""
+        if self._state == "jump":
+            return self._images.get("jump")
+        if self._state == "fall":
+            return self._images.get("fall")
+        return self._images.get(f"walk_r{self._frame + 1}")
+
+    def update(self, dt, player, held):
+        """Met à jour l'état, la direction et l'animation."""
+        # Hitstun : clignotement du sprite, pas de mise à jour direction/état
+        if player.hitstun > 0:
+            if self._sprite:
+                self._timer += dt
+                if self._timer >= 0.1:
+                    self._timer = 0.0
+                    self._sprite.opacity = 80 if self._sprite.opacity > 100 else 255
+            return
+
+        if self._sprite:
+            self._sprite.opacity = 255
+
+        # Direction — on utilise scale_x pour flipper
+        if key.Q in held or key.LEFT in held:
+            self._facing = -1
+        elif key.D in held or key.RIGHT in held:
+            self._facing = 1
+
+        # État
+        if not player.on_ground:
+            self._state = "fall" if player.vel_y < 0 else "jump"
+        else:
+            self._state = "walk"
+
+        # Avance les frames de marche
+        if self._state == "walk":
+            self._timer += dt
+            if self._timer >= self.FRAME_DURATION:
+                self._timer = 0.0
+                self._frame = (self._frame + 1) % 3
+        else:
+            self._frame = 0
+            self._timer = 0.0
+
+        # Applique l'image et le flip via scale_x
+        if self._sprite:
+            img = self._get_image()
+            if img and self._sprite.image != img:
+                self._sprite.image = img
+            # Flip horizontal selon direction
+            self._sprite.scale_x = abs(self._sprite.scale_x) * self._facing
+
+    def apply_camera(self, player, offset_x):
+        """Positionne le sprite à l'écran selon la caméra."""
+        if self._sprite:
+            self._sprite.x = int(player.x - offset_x)
+            self._sprite.y = int(player.y)
+
+    def delete(self):
+        if self._sprite:
+            try: self._sprite.delete()
+            except: pass
+            self._sprite = None
+        self._images.clear()
+
+
 class Player(Entity):
     def __init__(self, x, y, batch):
         super().__init__(x, y, 40, 60, batch)
-        self.hp     = 100
-        self.jumps  = 0
-        self.deaths = 0
+        self.hp      = 100
+        self.jumps   = 0
+        self.deaths  = 0
+        self.hitstun = 0.0   # secondes de blocage restantes
+        # Cacher le rectangle rouge de base
+        self.shape.visible = False
+        # Sprite animé
+        self.sprite_anim = PlayerSprite(batch)
 
     def update(self, dt):
         pass
@@ -54,6 +188,80 @@ class Platform(Entity):
     def __init__(self, x, y, w, h, batch):
         super().__init__(x, y, w, h, batch)
         self.shape.color = (120, 200, 120)
+        self._visual_sprites = []   # sprites visuels (décalés par caméra)
+        self._trunk_rects    = []   # troncs/tiges (pyglet shapes)
+
+    def set_sprite(self, image_path, theme, batch):
+        """Charge le sprite de surface + génère le tronc/tige selon le thème."""
+        try:
+            img = pyglet.image.load(image_path)
+            tex = img.get_texture()
+            tex.min_filter = GL_NEAREST
+            tex.mag_filter = GL_NEAREST
+            # Sprite de surface étiré sur toute la largeur de la plateforme
+            sp = pyglet.sprite.Sprite(img, x=self.x, y=self.y, batch=batch)
+            sp.scale_x = self.width  / img.width
+            sp.scale_y = self.height / img.height
+            self._visual_sprites.append(sp)
+            # Cacher le rectangle de collision
+            self.shape.visible = False
+
+            if theme == "ground":
+                # Tronc brun qui descend de la plateforme jusqu'au sol (y=40)
+                trunk_w  = max(6, self.width // 8)
+                trunk_x  = self.x + (self.width - trunk_w) // 2
+                trunk_h  = self.y - 40   # hauteur du tronc
+                if trunk_h > 0:
+                    # Corps du tronc
+                    r = shapes.Rectangle(trunk_x, 40, trunk_w, trunk_h,
+                                         color=(101, 67, 33), batch=batch)
+                    self._trunk_rects.append(r)
+                    # Reflet clair sur le bord gauche
+                    r2 = shapes.Rectangle(trunk_x, 40, max(2, trunk_w//4),
+                                          trunk_h, color=(139, 90, 43), batch=batch)
+                    self._trunk_rects.append(r2)
+
+            elif theme == "water":
+                # Tige d'algue fine qui descend jusqu'au sol
+                stem_w = max(4, self.width // 12)
+                stem_x = self.x + (self.width - stem_w) // 2
+                stem_h = self.y - 40
+                if stem_h > 0:
+                    r = shapes.Rectangle(stem_x, 40, stem_w, stem_h,
+                                         color=(20, 120, 60), batch=batch)
+                    self._trunk_rects.append(r)
+                    r2 = shapes.Rectangle(stem_x, 40, max(2, stem_w//3),
+                                          stem_h, color=(40, 180, 80), batch=batch)
+                    self._trunk_rects.append(r2)
+            # theme == "sky" : nuage flottant, pas de tige
+
+        except Exception as e:
+            print(f"[Platform] sprite non chargé : {e}")
+
+    def apply_camera(self, offset_x):
+        """Décale tous les visuels selon la caméra."""
+        screen_x = self.x - offset_x
+        for sp in self._visual_sprites:
+            sp.x = screen_x
+            sp.y = self.y
+        for i, r in enumerate(self._trunk_rects):
+            # Les troncs/tiges sont stockés par paires (corps + reflet)
+            # On recalcule leur x relatif à self.x
+            if i % 2 == 0:
+                trunk_w = r.width
+                r.x = screen_x + (self.width - trunk_w) // 2
+            else:
+                r.x = screen_x + (self.width - self._trunk_rects[i-1].width) // 2
+
+    def clear_visuals(self):
+        for sp in self._visual_sprites:
+            try: sp.delete()
+            except: pass
+        for r in self._trunk_rects:
+            try: r.batch = None
+            except: pass
+        self._visual_sprites.clear()
+        self._trunk_rects.clear()
 
     def update(self, dt):
         pass
@@ -129,6 +337,30 @@ class Camera:
             p.shape.x = int(p.x - self.offset_x)
             p.shape.y = int(p.y)
 
+    def apply_platforms(self, entities):
+        """Décale les sprites visuels des plateformes selon la caméra."""
+        for e in entities:
+            if isinstance(e, Platform) and hasattr(e, 'apply_camera'):
+                e.apply_camera(self.offset_x)
+
+    def apply_enemies(self, enemies):
+        """Applique le décalage caméra aux sprites animés des ennemis."""
+        for e in enemies:
+            if hasattr(e, 'animation'):
+                e.animation.sprite.x = int(e.x - self.offset_x)
+                e.animation.sprite.y = int(e.y)
+            # Barre de vie aussi
+            if hasattr(e, '_hp_bg'):
+                e._hp_bg.x  = int(e.x - self.offset_x)
+                e._hp_bg.y  = int(e.y + e.HEIGHT + 4)
+            if hasattr(e, '_hp_bar'):
+                e._hp_bar.x = int(e.x - self.offset_x)
+                e._hp_bar.y = int(e.y + e.HEIGHT + 4)
+            # Éclairs du NuageMechant
+            if hasattr(e, '_lightning'):
+                for bolt in e._lightning:
+                    bolt.apply_camera(self.offset_x)
+
 
 # ── Jeu ────────────────────────────────────────────────────────────────────────
 
@@ -139,6 +371,10 @@ class Game:
 
     def __init__(self):
         self.window    = pyglet.window.Window(WIDTH, HEIGHT, "Platformer Engine", resizable=True)
+
+        # Activer la transparence PNG globalement une seule fois
+        pyglet.gl.glEnable(pyglet.gl.GL_BLEND)
+        pyglet.gl.glBlendFunc(pyglet.gl.GL_SRC_ALPHA, pyglet.gl.GL_ONE_MINUS_SRC_ALPHA)
         self.bg_batch  = pyglet.graphics.Batch()
         self.batch     = pyglet.graphics.Batch()
         self.hud_batch = pyglet.graphics.Batch()
@@ -163,6 +399,8 @@ class Game:
 
         self.level_manager = LevelManager(self)
         self.level_manager.load(0)
+        self.enemy_manager.set_world(self.world.entities)
+        self._load_player_mount(0)   # charge le sprite selon le niveau
 
         self._build_ui()
         self.main_menu.show()
@@ -183,6 +421,7 @@ class Game:
                 self._on_back_to_main()
             if symbol == key.TAB and self._running:
                 self.level_manager.next_level()
+                self._load_player_mount(self.level_manager.index)
 
         @self.window.event
         def on_key_release(symbol, modifiers):
@@ -260,6 +499,16 @@ class Game:
                 self.hud.hide()
                 self.exit_btn.set_visible(False)
 
+    # ── Monture joueur ────────────────────────────────────────────────────────
+
+    def _load_player_mount(self, level_index):
+        """Charge la monture correspondant au niveau (0=cheval, 1=dauphin, 2=phénix)."""
+        mounts = ["cheval", "dauphin", "phenix"]
+        mount  = mounts[level_index % len(mounts)]
+        print(f"[DEBUG] Chargement monture : niveau={level_index} → {mount}")
+        self.player.sprite_anim.load_mount(mount)
+        print(f"[DEBUG] Monture chargée. Images : {list(self.player.sprite_anim._images.keys())}")
+
     # ── UI ────────────────────────────────────────────────────────────────────
 
     def _build_ui(self):
@@ -300,6 +549,8 @@ class Game:
     def _on_start_level(self, level_index):
         self.level_menu.hide()
         self.level_manager.load(level_index)
+        self.enemy_manager.set_world(self.world.entities)
+        self._load_player_mount(level_index)   # change de monture selon le niveau
         self.hud.show()
         self.camera.reset()
         self._held.clear()
@@ -386,23 +637,31 @@ class Game:
 
         if self.player.x > self.level_manager.current_level.length - 80:
             self.level_manager.next_level()
+            self._load_player_mount(self.level_manager.index)
 
         self._time += dt
         p = self.player
 
-        # ── Déplacement ───────────────────────────────────────────────────────
-        p.vel_x = 0
-        if key.Q in self._held or key.LEFT in self._held:
-            p.vel_x = -PLAYER_SPEED
-        if key.D in self._held or key.RIGHT in self._held:
-            p.vel_x = PLAYER_SPEED
+        # ── Hitstun : décompte et blocage des inputs ─────────────────────────
+        if p.hitstun > 0:
+            p.hitstun -= dt
+            p.vel_x = 0   # immobile pendant le hitstun
+        else:
+            p.hitstun = 0.0
 
-        # ── Saut ──────────────────────────────────────────────────────────────
-        if (key.SPACE in self._held or key.UP in self._held or key.Z in self._held) and p.on_ground:
-            p.vel_y     = JUMP_FORCE
-            p.on_ground = False
-            p.jumps    += 1
-            self.son_saut.play()
+            # ── Déplacement ───────────────────────────────────────────────────
+            p.vel_x = 0
+            if key.Q in self._held or key.LEFT in self._held:
+                p.vel_x = -PLAYER_SPEED
+            if key.D in self._held or key.RIGHT in self._held:
+                p.vel_x = PLAYER_SPEED
+
+            # ── Saut ──────────────────────────────────────────────────────────
+            if (key.SPACE in self._held or key.UP in self._held or key.Z in self._held) and p.on_ground:
+                p.vel_y     = JUMP_FORCE
+                p.on_ground = False
+                p.jumps    += 1
+                self.son_saut.play()
 
         # ── Sons de pas ───────────────────────────────────────────────────────
         moving = p.vel_x != 0 and p.on_ground
@@ -434,11 +693,16 @@ class Game:
             p.deaths += 1
             return
 
+        # ── Animation joueur ──────────────────────────────────────────────────
+        p.sprite_anim.update(dt, p, self._held)
+
         # ── Caméra ────────────────────────────────────────────────────────────
         self.camera.update(p, dt)
         self.camera.apply(self.world.entities)
-
-        # ── HUD ───────────────────────────────────────────────────────────────
+        self.camera.apply_platforms(self.world.entities)
+        self.camera.apply_enemies(self.enemy_manager.enemies)
+        self.camera.apply_projectiles(self.player_projectiles)
+        p.sprite_anim.apply_camera(p, self.camera.offset_x)
         self.hud.update(p, hp=p.hp, score=self._score)
         self.stats_screen.update_stats(
             time_sec=self._time, jumps=p.jumps,

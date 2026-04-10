@@ -28,7 +28,7 @@ class LevelManager:
                 name="Prairie",
                 theme="ground",
                 length=8000,
-                spawn=(100, 80),
+                spawn=(100, 180),
                 platforms=[
                     (0,    0, 8000, 40),   # sol
                     (0,    0,   50, 6000), # mur gauche
@@ -90,7 +90,7 @@ class LevelManager:
                 name="Lagune",
                 theme="water",
                 length=8000,
-                spawn=(100, 80),
+                spawn=(100, 180),
                 platforms=[
                     (0,    0, 8000, 40),
                     (0,    0,   50, 6000),
@@ -149,7 +149,7 @@ class LevelManager:
                 name="Cieux",
                 theme="sky",
                 length=8000,
-                spawn=(100, 120),
+                spawn=(100, 180),
                 platforms=[
                     (0,    0, 8000, 40),
                     (0,    0,   50, 6000),

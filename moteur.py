@@ -191,13 +191,11 @@ class PlayerSprite:
 class Player(Entity):
     def __init__(self, x, y, batch):
         super().__init__(x, y, 40, 60, batch)
-        self.hp      = 100
-        self.jumps   = 0
-        self.deaths  = 0
-        self.hitstun = 0.0   # secondes de blocage restantes
-        # Cacher le rectangle rouge de base
+        self.hp          = 10
+        self.jumps       = 0
+        self.deaths      = 0
+        self.hitstun     = 0.0   # invincibilité en secondes
         self.shape.visible = False
-        # Sprite animé
         self.sprite_anim = PlayerSprite(batch)
 
     def update(self, dt):
@@ -380,6 +378,18 @@ class Camera:
             if hasattr(e, '_lightning'):
                 for bolt in e._lightning:
                     bolt.apply_camera(self.offset_x)
+            # Flammes du Dragon
+            if hasattr(e, '_flames'):
+                for flame in e._flames:
+                    flame.apply_camera(self.offset_x)
+            # Plumes de l'Aigle
+            if hasattr(e, '_feathers'):
+                for feather in e._feathers:
+                    feather.apply_camera(self.offset_x)
+            # Orbes de l'Elfe
+            if hasattr(e, '_orbs'):
+                for orb in e._orbs:
+                    orb.apply_camera(self.offset_x)
 
 
 # ── Jeu ────────────────────────────────────────────────────────────────────────
@@ -535,7 +545,7 @@ class Game:
         w, h = self.window.width, self.window.height
         self.hud_batch = pyglet.graphics.Batch()
 
-        self.hud = HUD(w, h, self.hud_batch, max_hp=100, show_stats=True)
+        self.hud = HUD(w, h, self.hud_batch, max_hp=10, show_stats=True)
 
         self.game_over_menu = GameOverMenu(w, h, self.hud_batch,
                                            on_retry=self._on_retry,
@@ -649,6 +659,89 @@ class Game:
         # Nettoyage
         self.player_projectiles = [p for p in self.player_projectiles if p.alive]
 
+    # ── Collisions dégâts ────────────────────────────────────────────────────
+
+    def _check_damage(self, p):
+        """
+        Vérifie toutes les sources de dégâts en un seul endroit.
+        Si le joueur n'est pas en hitstun et qu'une hitbox le touche :
+          → -1 PV + hitstun selon la source
+        """
+        if p.hitstun > 0:
+            return   # invincible
+
+        def rect_hit(ex, ey, ew, eh):
+            """Collision AABB entre le joueur et un rectangle monde."""
+            return (p.x < ex + ew and p.x + p.width  > ex and
+                    p.y < ey + eh and p.y + p.height > ey)
+
+        def circle_hit(cx, cy, radius):
+            """Collision cercle/rectangle entre le joueur et un projectile."""
+            import math
+            pcx = p.x + p.width  / 2
+            pcy = p.y + p.height / 2
+            return math.hypot(cx - pcx, cy - pcy) < radius + min(p.width, p.height) / 2
+
+        for e in self.enemy_manager.enemies:
+            if not e.alive:
+                continue
+
+            # ── Contact direct avec le sprite de l'ennemi ──────────────────
+            if rect_hit(e.x, e.y, e.width, e.height):
+                hitstun = 2.0 if e.__class__.__name__ == "Requin" else 0.5
+                print(f"[HIT] {e.__class__.__name__} px={p.x:.0f} py={p.y:.0f} ex={e.x:.0f} ey={e.y:.0f} ew={e.width} eh={e.height}")
+                p.hp      = max(0, p.hp - 1)
+                p.hitstun = hitstun
+                return
+
+            # ── Flammes du Dragon ──────────────────────────────────────────
+            if hasattr(e, '_flames'):
+                for f in e._flames:
+                    if f.alive and circle_hit(f.x, f.y, 14):
+                        p.hp      = max(0, p.hp - 1)
+                        p.hitstun = 0.5
+                        f.destroy()
+                        return
+
+            # ── Plumes de l'Aigle ──────────────────────────────────────────
+            if hasattr(e, '_feathers'):
+                for f in e._feathers:
+                    if f.alive and rect_hit(f.x, f.y, 18, 4):
+                        p.hp      = max(0, p.hp - 1)
+                        p.hitstun = 0.3
+                        f.destroy()
+                        return
+
+            # ── Orbes de l'Elfe ────────────────────────────────────────────
+            if hasattr(e, '_orbs'):
+                for orb in e._orbs:
+                    if orb.alive and circle_hit(orb.x, orb.y, 10):
+                        p.hp      = max(0, p.hp - 1)
+                        p.hitstun = 0.4
+                        orb.destroy()
+                        return
+
+            # ── Éclairs du NuageMechant ────────────────────────────────────
+            if hasattr(e, '_lightning'):
+                for bolt in e._lightning:
+                    if bolt.alive:
+                        pcx = p.x + p.width / 2
+                        if (abs(pcx - bolt.cx) < 28 and
+                                bolt.y_bottom <= p.y + p.height and
+                                p.y <= bolt.y_top):
+                            p.hp      = max(0, p.hp - 1)
+                            p.hitstun = 0.4
+                            bolt.destroy()
+                            return
+
+        # ── Projectiles ennemis génériques (Elfe, etc.) ────────────────────
+        for proj in self.enemy_manager.projectiles:
+            if proj.alive and circle_hit(proj.x, proj.y, proj.radius):
+                p.hp      = max(0, p.hp - 1)
+                p.hitstun = 0.4
+                proj.destroy()
+                return
+
     # ── Boucle ────────────────────────────────────────────────────────────────
 
     def update(self, dt):
@@ -662,13 +755,11 @@ class Game:
         self._time += dt
         p = self.player
 
-        # ── Hitstun : décompte et blocage des inputs ─────────────────────────
+        # ── Hitstun (invincibilité) ───────────────────────────────────────────
         if p.hitstun > 0:
-            p.hitstun -= dt
-            p.vel_x = 0   # immobile pendant le hitstun
+            p.hitstun = max(0.0, p.hitstun - dt)
+            p.vel_x = 0
         else:
-            p.hitstun = 0.0
-
             # ── Déplacement ───────────────────────────────────────────────────
             p.vel_x = 0
             if key.Q in self._held or key.LEFT in self._held:
@@ -702,6 +793,7 @@ class Game:
         # ── Physique + ennemis ────────────────────────────────────────────────
         self.world.update(dt)
         self.enemy_manager.update(dt, p)
+        self._check_damage(p)
         self._update_player_projectiles(dt)
         self.level_manager.update_background()
 

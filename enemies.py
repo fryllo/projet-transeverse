@@ -212,60 +212,275 @@ class Enemy:
 # ── ENNEMIS RANGÉS ────────────────────────────────────────────────────────────
 # ══════════════════════════════════════════════════════════════════════════════
 
+class FlameParticle:
+    """Petite boule de feu animée qui compose le souffle du dragon."""
+    DURATION   = 0.6
+    FLASH_RATE = 0.05
+
+    def __init__(self, x, y, dx, dy, batch, speed=320):
+        self.alive   = True
+        self._timer  = 0.0
+        self._flash  = 0.0
+        self._vis    = True
+        import math
+        length = math.hypot(dx, dy) or 1
+        self.vx = dx / length * speed
+        self.vy = dy / length * speed
+        self.x, self.y = float(x), float(y)
+        # 3 cercles concentriques : coeur blanc, milieu orange, halo rouge
+        self._c0 = shapes.Circle(int(x), int(y), 14, color=(255, 60,  10), batch=batch)
+        self._c1 = shapes.Circle(int(x), int(y),  9, color=(255,160,  30), batch=batch)
+        self._c2 = shapes.Circle(int(x), int(y),  4, color=(255,240, 180), batch=batch)
+        self._c0.opacity = 220
+        self._c1.opacity = 200
+        self._c2.opacity = 255
+        self._batch = batch
+
+    def update(self, dt):
+        if not self.alive:
+            return
+        self._timer += dt
+        self._flash += dt
+        self.x += self.vx * dt
+        self.y += self.vy * dt
+        # Clignotement
+        if self._flash >= self.FLASH_RATE:
+            self._flash = 0.0
+            self._vis   = not self._vis
+            a0 = 220 if self._vis else 80
+            a1 = 200 if self._vis else 60
+            a2 = 255 if self._vis else 120
+            self._c0.opacity = a0
+            self._c1.opacity = a1
+            self._c2.opacity = a2
+        # Rétrécissement progressif
+        ratio = 1.0 - self._timer / self.DURATION
+        self._c0.radius = max(1, int(14 * ratio))
+        self._c1.radius = max(1, int( 9 * ratio))
+        self._c2.radius = max(1, int( 4 * ratio))
+        ix, iy = int(self.x), int(self.y)
+        self._c0.x = ix; self._c0.y = iy
+        self._c1.x = ix; self._c1.y = iy
+        self._c2.x = ix; self._c2.y = iy
+        if self._timer >= self.DURATION:
+            self.destroy()
+
+    def hits(self, player):
+        if not self.alive:
+            return False
+        import math
+        cx = player.x + player.width  / 2
+        cy = player.y + player.height / 2
+        return math.hypot(self.x - cx, self.y - cy) < 18 + player.width / 2
+
+    def apply_camera(self, offset_x):
+        sx = int(self.x - offset_x)
+        self._c0.x = sx; self._c1.x = sx; self._c2.x = sx
+
+    def destroy(self):
+        self.alive = False
+        for c in (self._c0, self._c1, self._c2):
+            try: c.batch = None
+            except: pass
+
+
 class Dragon(Enemy):
-    COLOR     = (200, 60,  20)
-    WIDTH     = 50
-    HEIGHT    = 40
-    HP        = 120
-    SPEED     = 60
-    DAMAGE    = 20
-    ATTACK_CD = 2.0
-    IS_RANGED = True
+    COLOR          = (200, 60, 20)
+    WIDTH          = 25   # taille divisée par 2
+    HEIGHT         = 20   # taille divisée par 2
+    HP             = 120
+    SPEED          = 60
+    DAMAGE         = 1    # 1 PV par flamme
+    ATTACK_CD      = 3.0
+    IS_RANGED      = True
     FRAME_PATHS = [
         "assets/dragon_frame1.png",
         "assets/dragon_frame2.png",
         "assets/dragon_frame3.png",
     ]
-    FRAME_DURATION = 0.2
+    FRAME_DURATION = 1.0   # 1 seconde par frame
+
+    def __init__(self, x, y, batch):
+        super().__init__(x, y, batch)
+        self.animation.sprite.scale = 0.5
+        self._flames  = []
+        self._facing  = 1   # 1=droite, -1=gauche
+        # Patrouille bornée à 1500px
+        self._patrol_range = 1500
+
+    def update(self, dt, player, projectiles):
+        if not self.alive:
+            return
+
+        self._cd = max(0.0, self._cd - dt)
+
+        # Patrouille gauche-droite sur 1500px
+        self._patrol(dt)
+
+        # Direction vers le joueur pour le sprite et la bouche
+        self._facing = 1 if player.x >= self.x else -1
+        self.animation.sprite.scale_x = 0.5 * self._facing
+
+        # Avancer la frame (1s par frame)
+        self.animation.update(dt)
+        current_frame = self.animation.frame_index
+
+        # Attaque sur la frame 3 (index 2)
+        if current_frame == 2 and self._cd <= 0:
+            self._fire(player)
+            self._cd = self.ATTACK_CD
+
+        # Mettre à jour les flammes
+        for f in self._flames:
+            f.update(dt)
+            if f.alive and f.hits(player):
+                pass  # dégâts gérés centralement
+        self._flames = [f for f in self._flames if f.alive]
+
+        self._sync()
+
+    def _fire(self, player):
+        """Lance une rafale de 5 boules de feu depuis la bouche du dragon."""
+        import math
+        # Bouche à droite si facing=1, à gauche si facing=-1
+        if self._facing == 1:
+            cx = self.x + self.WIDTH
+        else:
+            cx = self.x
+        cy = self.y + int(self.HEIGHT * 0.80)
+        dx = (player.x + player.width  / 2) - cx
+        dy = (player.y + player.height / 2) - cy
+        for i in range(5):
+            angle_offset = (i - 2) * 0.15
+            rdx = dx * math.cos(angle_offset) - dy * math.sin(angle_offset)
+            rdy = dx * math.sin(angle_offset) + dy * math.cos(angle_offset)
+            self._flames.append(FlameParticle(cx, cy, rdx, rdy, self._batch, speed=960))
+
+    def destroy(self):
+        for f in self._flames:
+            f.destroy()
+        self._flames.clear()
+        super().destroy()
 
     def attack(self, player, projectiles):
-        dx = (player.x + player.width  / 2) - (self.x + self.WIDTH  / 2)
-        dy = (player.y + player.height / 2) - (self.y + self.HEIGHT / 2)
-        projectiles.append(Projectile(
-            self.x + self.WIDTH / 2, self.y + self.HEIGHT / 2,
-            dx, dy,
-            damage=self.DAMAGE, speed=400,
-            color=(255, 120, 30), radius=10,
-            batch=self._batch,
-        ))
+        pass  # géré dans update()
+
+
+class EnergyOrb:
+    """Boule d'énergie verte lumineuse tirée par l'elfe."""
+    DURATION = 2.5
+
+    def __init__(self, x, y, dx, dy, batch):
+        self.x, self.y = float(x), float(y)
+        self.alive     = True
+        self._timer    = 0.0
+        self._flash    = 0.0
+        self._vis      = True
+        speed  = 280
+        length = math.hypot(dx, dy) or 1
+        self.vx = dx / length * speed
+        self.vy = dy / length * speed
+        # Halo extérieur + coeur
+        self._outer = shapes.Circle(int(x), int(y), 10, color=(60, 220, 80),  batch=batch)
+        self._inner = shapes.Circle(int(x), int(y),  5, color=(200, 255, 180), batch=batch)
+        self._outer.opacity = 180
+        self._inner.opacity = 255
+
+    def update(self, dt):
+        if not self.alive:
+            return
+        self._timer += dt
+        self._flash += dt
+        self.x += self.vx * dt
+        self.y += self.vy * dt
+        # Clignotement léger
+        if self._flash >= 0.08:
+            self._flash = 0.0
+            self._vis   = not self._vis
+            self._outer.opacity = 180 if self._vis else 80
+            self._inner.opacity = 255 if self._vis else 150
+        ix, iy = int(self.x), int(self.y)
+        self._outer.x = ix; self._outer.y = iy
+        self._inner.x = ix; self._inner.y = iy
+        if self._timer >= self.DURATION:
+            self.destroy()
+
+    def apply_camera(self, offset_x):
+        sx = int(self.x - offset_x)
+        self._outer.x = sx
+        self._inner.x = sx
+
+    def destroy(self):
+        self.alive = False
+        for c in (self._outer, self._inner):
+            try: c.batch = None
+            except: pass
 
 
 class Elfe(Enemy):
-    COLOR     = (60, 180, 80)
-    WIDTH     = 28
-    HEIGHT    = 50
-    HP        = 60
-    SPEED     = 90
-    DAMAGE    = 12
-    ATTACK_CD = 1.2
-    IS_RANGED = True
+    COLOR          = (60, 180, 80)
+    WIDTH          = 28
+    HEIGHT         = 50
+    HP             = 60
+    SPEED          = 0       # statique
+    DAMAGE         = 1
+    ATTACK_CD      = 0.5    # tir toutes les 0.5s
+    IS_RANGED      = True
     FRAME_PATHS = [
         "assets/elfe_frame1.png",
         "assets/elfe_frame2.png",
         "assets/elfe_frame3.png",
     ]
-    FRAME_DURATION = 0.18
+    FRAME_DURATION = 0.3
+
+    def __init__(self, x, y, batch):
+        super().__init__(x, y, batch)
+        self.animation.sprite.scale = 1 / 2.5
+        self._orbs       = []
+        self._angle      = 0.0   # angle courant de tir (radians, sens horaire)
+
+    def update(self, dt, player, projectiles):
+        if not self.alive:
+            return
+
+        self._cd = max(0.0, self._cd - dt)
+
+        # Tourelle statique — pas de déplacement
+
+        # Orienter le sprite vers le joueur
+        facing = 1 if player.x >= self.x else -1
+        self.animation.sprite.scale_x = (1 / 2.5) * facing
+        self.animation.update(dt)
+
+        # Tir en rotation dans le sens des aiguilles d'une montre
+        if self._cd <= 0:
+            self._shoot_orb()
+            # Avancer l'angle dans le sens horaire (angle négatif en coordonnées pyglet)
+            self._angle -= math.pi / 4   # 8 directions, 45° par tir
+            self._cd = self.ATTACK_CD
+
+        # Mettre à jour les orbes
+        for orb in self._orbs:
+            orb.update(dt)
+        self._orbs = [o for o in self._orbs if o.alive]
+
+        self._sync()
+
+    def _shoot_orb(self):
+        cx = self.x + self.WIDTH  / 2
+        cy = self.y + self.HEIGHT / 2
+        dx = math.cos(self._angle)
+        dy = math.sin(self._angle)
+        self._orbs.append(EnergyOrb(cx, cy, dx, dy, self._batch))
 
     def attack(self, player, projectiles):
-        dx = (player.x + player.width  / 2) - (self.x + self.WIDTH  / 2)
-        dy = (player.y + player.height / 2) - (self.y + self.HEIGHT / 2)
-        projectiles.append(Projectile(
-            self.x + self.WIDTH / 2, self.y + self.HEIGHT / 2,
-            dx, dy,
-            damage=self.DAMAGE, speed=550,
-            color=(100, 255, 120), radius=6,
-            batch=self._batch,
-        ))
+        pass  # géré dans update()
+
+    def destroy(self):
+        for o in self._orbs:
+            o.destroy()
+        self._orbs.clear()
+        super().destroy()
 
 
 class LightningBolt:
@@ -453,8 +668,7 @@ class NuageMechant(Enemy):
         for bolt in self._lightning:
             bolt.update(dt)
             if bolt.alive and bolt.hits(player):
-                player.hp = max(0, player.hp - self.DAMAGE)
-                bolt.destroy()  # un seul impact par éclair
+                pass  # dégâts gérés centralement  # un seul impact par éclair
         self._lightning = [b for b in self._lightning if b.alive]
 
         # Détection joueur en dessous
@@ -475,7 +689,7 @@ class NuageMechant(Enemy):
 
         # Contact direct : 1 PV
         if self._touches(player) and self._cd <= 0:
-            player.hp = max(0, player.hp - self.DAMAGE)
+            pass  # dégâts gérés centralement
             self._cd  = self.ATTACK_CD
 
         self._sync()
@@ -518,25 +732,145 @@ class NuageMechant(Enemy):
 # ── ENNEMIS MÊLÉE ─────────────────────────────────────────────════════════════
 # ══════════════════════════════════════════════════════════════════════════════
 
+class Feather:
+    """Plume animée tirée par l'aigle vers le joueur."""
+    DURATION = 1.2
+
+    def __init__(self, x, y, dx, dy, damage, batch):
+        self.x, self.y = float(x), float(y)
+        self.damage    = damage
+        self.alive     = True
+        self._timer    = 0.0
+        self._angle    = 0.0
+        speed = 380
+        length = math.hypot(dx, dy) or 1
+        self.vx = dx / length * speed
+        self.vy = dy / length * speed
+
+        # Plume = rectangle fin orienté dans la direction du tir
+        self._body = shapes.Rectangle(
+            int(x), int(y), 18, 4,
+            color=(160, 120, 40), batch=batch
+        )
+        self._tip = shapes.Rectangle(
+            int(x), int(y), 6, 4,
+            color=(220, 190, 100), batch=batch
+        )
+        self._body.opacity = 230
+        self._tip.opacity  = 255
+
+    def update(self, dt):
+        if not self.alive:
+            return
+        self._timer += dt
+        self.x += self.vx * dt
+        self.y += self.vy * dt
+        # Rotation simulée : oscille l'opacité pour effet de vrille
+        self._angle += dt * 12
+        osc = int(abs(math.sin(self._angle)) * 180) + 60
+        self._body.opacity = osc
+        self._tip.opacity  = min(255, osc + 60)
+        ix, iy = int(self.x), int(self.y)
+        self._body.x = ix
+        self._body.y = iy
+        self._tip.x  = ix + 12
+        self._tip.y  = iy
+        if self._timer >= self.DURATION:
+            self.destroy()
+
+    def hits(self, player):
+        if not self.alive:
+            return False
+        return (player.x < self.x + 18 and player.x + player.width > self.x and
+                player.y < self.y + 4  and player.y + player.height > self.y)
+
+    def apply_camera(self, offset_x):
+        sx = int(self.x - offset_x)
+        self._body.x = sx
+        self._tip.x  = sx + 12
+
+    def destroy(self):
+        self.alive = False
+        for s in (self._body, self._tip):
+            try: s.batch = None
+            except: pass
+
+
 class Aigle(Enemy):
-    COLOR     = (160, 120, 40)
-    WIDTH     = 34
-    HEIGHT    = 30
-    HP        = 40
-    SPEED     = 160
-    DAMAGE    = 8
-    ATTACK_CD = 0.8
-    IS_RANGED = False
+    COLOR          = (160, 120, 40)
+    WIDTH          = 34
+    HEIGHT         = 30
+    HP             = 40
+    SPEED          = 80
+    DAMAGE         = 1
+    ATTACK_CD      = 3.0
+    IS_RANGED      = True
     FRAME_PATHS = [
         "assets/aigle_frame1.png",
         "assets/aigle_frame2.png",
         "assets/aigle_frame3.png",
     ]
-    FRAME_DURATION = 0.15
+    FRAME_DURATION = 0.2
+
+    def __init__(self, x, y, batch):
+        super().__init__(x, y, batch)
+        self.animation.sprite.scale = 1/3
+        self._feathers = []
+        self._facing   = 1
+
+    def update(self, dt, player, projectiles):
+        if not self.alive:
+            return
+
+        self._cd = max(0.0, self._cd - dt)
+
+        # Patrouille normale
+        self._patrol(dt)
+
+        # Direction vers le joueur
+        self._facing = 1 if player.x >= self.x else -1
+        self.animation.sprite.scale_x = (1/3) * self._facing
+
+        # Animation
+        self.animation.update(dt)
+
+        # Attaque toutes les 3s
+        if self._cd <= 0:
+            self._shoot_feathers(player)
+            self._cd = self.ATTACK_CD
+
+        # Mettre à jour les plumes
+        for f in self._feathers:
+            f.update(dt)
+            if f.alive and f.hits(player):
+                pass  # dégâts gérés centralement
+        self._feathers = [f for f in self._feathers if f.alive]
+
+        self._sync()
+
+    def _shoot_feathers(self, player):
+        """Tire 3 plumes en éventail vers le joueur."""
+        if self._facing == 1:
+            cx = self.x + self.WIDTH
+        else:
+            cx = self.x
+        cy = self.y + self.HEIGHT * 0.6
+        dx = (player.x + player.width  / 2) - cx
+        dy = (player.y + player.height / 2) - cy
+        for i in range(3):
+            angle_offset = (i - 1) * 0.2
+            rdx = dx * math.cos(angle_offset) - dy * math.sin(angle_offset)
+            rdy = dx * math.sin(angle_offset) + dy * math.cos(angle_offset)
+            self._feathers.append(Feather(cx, cy, rdx, rdy, self.DAMAGE, self._batch))
 
     def attack(self, player, projectiles):
-        if abs(self.x - player.x) < self.WIDTH + player.width:
-            player.hp = max(0, player.hp - self.DAMAGE)
+        pass  # géré dans update()
+
+    def destroy(self):
+        for f in self._feathers:
+            f.destroy()
+        self._feathers.clear()
+        super().destroy()
 
 
 class Requin(Enemy):
@@ -634,10 +968,8 @@ class Requin(Enemy):
             chase_dir = 1 if player.x > self.x else -1
             self.x += self.SPEED_CHASE * chase_dir * dt
             facing = chase_dir
-            # Morsure si contact
-            if self._touches(player) and self._cd <= 0:
-                player.hp = max(0, player.hp - self.DAMAGE)
-                player.hitstun = 2.0   # bloquer Greta 2 secondes
+            # Morsure si contact et joueur pas en hitstun
+            if self._touches(player) and player.hitstun <= 0:
                 self._cd = self.ATTACK_CD
                 self._state = "bite"
                 self._bite_timer = 0.4
@@ -657,9 +989,7 @@ class Requin(Enemy):
             if dist < self.CHASE_DIST:
                 self._state = "chase"
             # Morsure si contact même en patrol
-            if self._touches(player) and self._cd <= 0:
-                player.hp = max(0, player.hp - self.DAMAGE)
-                player.hitstun = 2.0
+            if self._touches(player) and player.hitstun <= 0:
                 self._cd = self.ATTACK_CD
                 self._state = "bite"
                 self._bite_timer = 0.4
@@ -720,7 +1050,7 @@ class Champignon(Enemy):
         # Dégâts au contact joueur
         self._cd = max(0.0, self._cd - dt)
         if self._touches(player) and self._cd <= 0:
-            player.hp = max(0, player.hp - self.DAMAGE)
+            pass  # dégâts gérés centralement
             self._cd  = self.ATTACK_CD
         self._sync()
         self.animation.update(dt)
@@ -767,9 +1097,9 @@ class EnemyManager:
 
         for p in self.projectiles:
             p.update(dt)
+            # dégâts gérés par moteur._check_damage
             if p.alive and p.hits(player):
-                player.hp = max(0, player.hp - p.damage)
-                p.destroy()
+                pass
 
         self.enemies     = [e for e in self.enemies     if e.alive]
         self.projectiles = [p for p in self.projectiles if p.alive]

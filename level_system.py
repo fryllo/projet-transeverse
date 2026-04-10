@@ -28,7 +28,7 @@ class LevelManager:
                 name="Prairie",
                 theme="ground",
                 length=8000,
-                spawn=(100, 180),
+                spawn=(100, 80),
                 platforms=[
                     (0,    0, 8000, 40),   # sol
                     (0,    0,   50, 6000), # mur gauche
@@ -90,7 +90,7 @@ class LevelManager:
                 name="Lagune",
                 theme="water",
                 length=8000,
-                spawn=(100, 180),
+                spawn=(100, 80),
                 platforms=[
                     (0,    0, 8000, 40),
                     (0,    0,   50, 6000),
@@ -149,7 +149,7 @@ class LevelManager:
                 name="Cieux",
                 theme="sky",
                 length=8000,
-                spawn=(100, 180),
+                spawn=(100, 120),
                 platforms=[
                     (0,    0, 8000, 40),
                     (0,    0,   50, 6000),
@@ -203,6 +203,7 @@ class LevelManager:
                     (Elfe,  5120,  270),
                     (Aigle, 6220,  330),
                     (Dragon,7100,  410),
+                    (Elfe,  6640,  370),
                 ],
             ),
         ]
@@ -236,7 +237,7 @@ class LevelManager:
         self.game.player.vel_x = 0
         self.game.player.vel_y = 0
         self.game.player.on_ground = False
-        self.game.player.hp = 100
+        self.game.player.hp = 10
 
         # Chemins des sprites selon le thème
         sprite_paths = {

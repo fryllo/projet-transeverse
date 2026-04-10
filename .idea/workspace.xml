@@ -4,52 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="42b37434-76ba-430e-acd7-c42e563fb9a6" name="Changes" comment="spawn mob">
-      <change afterPath="$PROJECT_DIR$/assets/greta_cheval_chute.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/greta_cheval_frame1.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/greta_cheval_frame1_left.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/greta_cheval_frame2.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/greta_cheval_frame3.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/greta_cheval_saut.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/greta_dauphin_chute.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/greta_dauphin_frame1.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/greta_dauphin_frame1_left.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/greta_dauphin_frame2.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/greta_dauphin_frame3.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/greta_dauphin_saut.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/greta_phenix_chute.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/greta_phenix_frame1.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/greta_phenix_frame1_left.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/greta_phenix_frame2.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/greta_phenix_frame3.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/greta_phenix_saut.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/platform_algue.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/platform_nuage.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/platform_tree.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/requin_frame4.png" afterDir="false" />
+    <list default="true" id="42b37434-76ba-430e-acd7-c42e563fb9a6" name="Changes" comment="anim greta/mob v1">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/aigle_frame1.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/aigle_frame1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/aigle_frame2.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/aigle_frame2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/aigle_frame3.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/aigle_frame3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/champignon_frame1.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/champignon_frame1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/champignon_frame2.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/champignon_frame2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/champignon_frame3.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/champignon_frame3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/dragon_frame1.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/dragon_frame1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/dragon_frame2.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/dragon_frame2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/dragon_frame3.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/dragon_frame3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/elfe_frame1.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/elfe_frame1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/elfe_frame2.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/elfe_frame2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/elfe_frame3.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/elfe_frame3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/nuage_mechant-frame1.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/nuage_mechant_frame1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/nuage_mechant_frame2.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/nuage_mechant_frame2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/nuage_mechant_frame3.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/nuage_mechant_frame3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/requin_frame1.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/requin_frame1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/requin_frame2.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/requin_frame2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/requin_frame3.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/requin_frame3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/background.py" beforeDir="false" afterPath="$PROJECT_DIR$/background.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/enemies.py" beforeDir="false" afterPath="$PROJECT_DIR$/enemies.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/level_system.py" beforeDir="false" afterPath="$PROJECT_DIR$/level_system.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/moteur.py" beforeDir="false" afterPath="$PROJECT_DIR$/moteur.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -98,37 +54,37 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "Python.background.executor": "Run",
-    "Python.level_system.executor": "Run",
-    "Python.main.executor": "Run",
-    "Python.menus.executor": "Run",
-    "Python.moteur.executor": "Run",
-    "Python.pnj.executor": "Run",
-    "Python.son.executor": "Run",
-    "Python.theme.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "codeWithMe.voiceChat.enabledByDefault": "false",
-    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
-    "git-widget-placeholder": "main",
-    "ignore.virus.scanning.warn.message": "true",
-    "junie.onboarding.icon.badge.shown": "true",
-    "last_opened_file_path": "C:/Users/louis/projet-transeverse/assets",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
-    "to.speed.mode.migration.done": "true",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;Python.background.executor&quot;: &quot;Run&quot;,
+    &quot;Python.level_system.executor&quot;: &quot;Run&quot;,
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;Python.menus.executor&quot;: &quot;Run&quot;,
+    &quot;Python.moteur.executor&quot;: &quot;Run&quot;,
+    &quot;Python.pnj.executor&quot;: &quot;Run&quot;,
+    &quot;Python.son.executor&quot;: &quot;Run&quot;,
+    &quot;Python.theme.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/louis/projet-transeverse/assets&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
+    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="PyConsoleOptionsProvider">
     <option name="myPythonConsoleState">
       <console-settings module-name="projet-transeverse" is-module-sdk="true">
@@ -157,11 +113,11 @@
       </envs>
       <option name="SDK_HOME" value="" />
       <option name="SDK_NAME" value="Python 3.13" />
-      <option name="WORKING_DIRECTORY" value="C:\Users\louis\projet-transeverse" />
+      <option name="WORKING_DIRECTORY" value="$ProjectFileDir$" />
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main.py" />
+      <option name="SCRIPT_NAME" value="main.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -315,7 +271,15 @@
       <option name="project" value="LOCAL" />
       <updated>1775742922510</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="anim greta/mob v1">
+      <option name="closed" value="true" />
+      <created>1775801292150</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1775801292150</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -338,7 +302,8 @@
     <MESSAGE value="hjbh" />
     <MESSAGE value="test pr éviter de tout perdre" />
     <MESSAGE value="spawn mob" />
-    <option name="LAST_COMMIT_MESSAGE" value="spawn mob" />
+    <MESSAGE value="anim greta/mob v1" />
+    <option name="LAST_COMMIT_MESSAGE" value="anim greta/mob v1" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/projet_transeverse$main.coverage" NAME="main Coverage Results" MODIFIED="1775557584030" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />

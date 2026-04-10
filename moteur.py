@@ -83,13 +83,13 @@ class PlayerSprite:
         for k, path in keys.items():
             try:
                 img = pyglet.image.load(path)
-                tex = img.get_texture()
-                tex.min_filter = GL_NEAREST
-                tex.mag_filter = GL_NEAREST
                 self._images[k] = img
+                # Créer version flippée
+                self._images[k + "_l"] = self._flip_image(img)
             except Exception as e:
                 print(f"[PlayerSprite] {path} : {e}")
                 self._images[k] = None
+                self._images[k + "_l"] = None
 
         first = self._images.get("walk_r1")
         if first:
@@ -102,13 +102,35 @@ class PlayerSprite:
         self._facing = 1
         self._state  = "walk"
 
+    @staticmethod
+    def _flip_image(img):
+        """Retourne une copie de l'image flippée horizontalement, sans PIL."""
+        try:
+            data   = img.get_image_data()
+            w, h   = data.width, data.height
+            fmt    = 'RGBA'
+            pitch  = w * 4
+            raw    = data.get_data(fmt, pitch)
+            rows   = []
+            for r in range(h):
+                row = raw[r*pitch:(r+1)*pitch]
+                # Inverser les pixels 4 par 4
+                pixels = [row[i*4:(i+1)*4] for i in range(w)]
+                pixels.reverse()
+                rows.append(b''.join(pixels))
+            return pyglet.image.ImageData(w, h, fmt, b''.join(rows), pitch)
+        except Exception as e:
+            print(f"[flip] {e}")
+            return img
+
     def _get_image(self):
-        """Retourne l'image correspondant à l'état actuel (toujours version droite)."""
+        """Retourne l'image selon l'état et la direction."""
+        suffix = "_l" if self._facing == -1 else ""
         if self._state == "jump":
-            return self._images.get("jump")
+            return self._images.get(f"jump{suffix}")
         if self._state == "fall":
-            return self._images.get("fall")
-        return self._images.get(f"walk_r{self._frame + 1}")
+            return self._images.get(f"fall{suffix}")
+        return self._images.get(f"walk_r{self._frame + 1}{suffix}")
 
     def update(self, dt, player, held):
         """Met à jour l'état, la direction et l'animation."""
@@ -146,13 +168,11 @@ class PlayerSprite:
             self._frame = 0
             self._timer = 0.0
 
-        # Applique l'image et le flip via scale_x
+        # Applique l'image selon direction
         if self._sprite:
             img = self._get_image()
             if img and self._sprite.image != img:
                 self._sprite.image = img
-            # Flip horizontal selon direction
-            self._sprite.scale_x = abs(self._sprite.scale_x) * self._facing
 
     def apply_camera(self, player, offset_x):
         """Positionne le sprite à l'écran selon la caméra."""

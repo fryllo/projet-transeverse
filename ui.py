@@ -43,6 +43,7 @@ class Button:
                                  color=COLOR_TEXT,
                                  anchor_x="center", anchor_y="center")
 
+
     # ── état ──────────────────────────────────────────────────────────────────
 
     def _refresh_color(self):

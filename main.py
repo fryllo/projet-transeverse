@@ -2,6 +2,8 @@ from moteur import Game
 from npc import NPC
 import pyglet
 
+
+
 musique = pyglet.media.load("musique/PIANO.wav")
 player_musique = pyglet.media.Player()
 player_musique.queue(musique)

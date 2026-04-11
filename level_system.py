@@ -2,20 +2,16 @@
 from pyglet import shapes
 from enemies import Dragon, Elfe, NuageMechant, Aigle, Requin, Champignon
 from background import BackgroundBuilder
-from npc import NPC
-
-
 
 
 class Level:
-    def __init__(self, name, theme, length, spawn, platforms, enemies, npcs):
+    def __init__(self, name, theme, length, spawn, platforms, enemies):
         self.name = name
         self.theme = theme
         self.length = length
         self.spawn = spawn
         self.platforms = platforms
         self.enemies = enemies
-        self.npcs = npcs
 
 
 class LevelManager:
@@ -51,14 +47,9 @@ class LevelManager:
                     (Champignon, 910, 40),
                     (Dragon, 1500, 60),
                 ],
-                npcs=[
-                    ("La darone à ta grand mére","Bonjour aventurier !", 400, 40),
-                    ("Le pedo of all time",["Le dragon est dangereux...","son bazouzou est énorme"], 1200, 40),
-                ],
             ),
             Level(
                 name="Lagune",
-                npcs=[],
                 theme="water",
                 length=8000,
                 spawn=(100, 80),
@@ -83,7 +74,6 @@ class LevelManager:
             Level(
                 name="Cieux",
                 theme="sky",
-                npcs=[],
                 length=8000,
                 spawn=(100, 120),
                 platforms=[
@@ -134,10 +124,6 @@ class LevelManager:
         self.game.player.vel_y = 0
         self.game.player.on_ground = False
         self.game.player.hp = 100
-
-        for name, text, x, y in level.npcs:
-            npc = NPC(x, y, self.game.batch, text)
-            self.game.world.add(npc)
 
         for x, y, w, h in level.platforms:
             p = self.game.PlatformClass(x, y, w, h, self.game.batch)

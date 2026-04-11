@@ -1,7 +1,6 @@
 import pyglet
 from pyglet.window import key
 from pyglet import shapes
-from npc import NPC
 
 from ui      import MainMenu
 from hud     import HUD
@@ -9,8 +8,6 @@ from menus   import OptionsMenu, StatsScreen
 from enemies import EnemyManager, Dragon
 from level_system import LevelManager
 from ui import MainMenu, LevelSelect, Button, GameOverMenu
-from npc import NPC
-import pyglet
 
 son_pas = pyglet.media.load("musique/bruit_de_pas.wav", streaming=False)
 son_saut = pyglet.media.load("musique/saut.flac", streaming=False)
@@ -61,13 +58,6 @@ class Platform(Entity):
     def update(self, dt):
         pass
 
-class NPC(Entity):
-    def __init__(self, x, y, batch, text):
-        super().__init__(x, y, 40, 60, batch)
-        self.shape.color = (80, 80, 200)  # bleu = PNJ
-        self.text = text
-        self.can_interact = False
-
 
 # ── Physique ───────────────────────────────────────────────────────────────────
 
@@ -80,7 +70,7 @@ class PhysicsWorld:
 
     def update(self, dt):
         for e in self.entities:
-            if isinstance(e, Platform) or isinstance(e, NPC):
+            if isinstance(e, Platform):
                 continue
             e.vel_y -= GRAVITY * dt
             e.x += e.vel_x * dt
@@ -89,14 +79,6 @@ class PhysicsWorld:
             e.on_ground = False
             self._resolve(e, "y")
             e.sync_graphics()
-
-    def update(self, dt):
-        for e in self.entities:
-            if isinstance(e, Platform):
-                continue
-            if isinstance(e, NPC):
-                e.sync_graphics()
-                continue
 
     @staticmethod
     def _overlap(a, b):
@@ -180,40 +162,10 @@ class Game:
         self.main_menu.show()
         self.hud.hide()
 
-        # label dialogue APRÈS _build_ui
-        self.dialogue_label = pyglet.text.Label(
-            "",
-            font_name="Arial",
-            font_size=18,
-            bold=True,
-            color=(255, 255, 255, 255),
-            x=self.window.width // 2,
-            y=80,
-            anchor_x='center',
-            anchor_y='center',
-            batch=self.hud_batch
-        )
-        self.current_npc = None
-        self.show_dialogue = False
-
-        self.main_menu.show()
-        self.hud.hide()
-
         self.son_pas = son_pas
         self.son_saut = son_saut
         self._step_timer = 0
 
-        self.dialogue_label = pyglet.text.Label(
-            "",
-            font_size=16,
-            x=self.window.width // 2,
-            y=100,
-            anchor_x='center',
-            batch=self.hud_batch
-        )
-
-        self.current_npc = None
-        self.show_dialogue = False
 
 
         pyglet.clock.schedule_interval(self.update, 1 / 60)
@@ -228,16 +180,6 @@ class Game:
                 self._on_back_to_main()
             if symbol == key.TAB and self._running:
                 self.level_manager.next_level()
-
-            #npc
-            if symbol == key.E and self._running:
-                if self.show_dialogue:
-                    self.show_dialogue = False
-                    self.dialogue_label.text = ""
-                elif self.current_npc:
-                    self.show_dialogue = True
-                    t = self.current_npc.text
-                    self.dialogue_label.text = " | ".join(t) if isinstance(t, list) else t
 
         @self.window.event
         def on_key_release(symbol, modifiers):
@@ -319,9 +261,6 @@ class Game:
     def create_level(self):
         self.player = Player(100, 60, self.batch)
         self.world.add(self.player)
-
-        npc = NPC(600, 40, self.batch, "Salut aventurier ! Fais attention au dragon.")
-        self.world.add(npc)
 
         # Test : Dragon juste devant le joueur
         self.enemy_manager.clear()
@@ -443,9 +382,6 @@ class Game:
         self._time += dt
         p = self.player
 
-        #pnj
-        if not self.show_dialogue:
-            self.dialogue_label.text = ""
         #son
         if (key.SPACE in self._held or key.UP in self._held or key.Z in self._held) and p.on_ground:
             p.vel_y = JUMP_FORCE
@@ -477,14 +413,6 @@ class Game:
             p.jumps    += 1
 
         self.world.update(dt)
-        self.current_npc = None
-
-        for e in self.world.entities:
-            if isinstance(e, NPC):
-                distance = abs(self.player.x - e.x)
-                if distance < 80:
-                    self.current_npc = e
-                    break
         self.enemy_manager.update(dt, self.player)
         if p.hp <= 0:
             self._running = False  # On fige le jeu

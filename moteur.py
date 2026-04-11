@@ -155,11 +155,19 @@ class Game:
             self._held.discard(symbol)
 
         @self.window.event
+        @self.window.event
         def on_draw():
             self.window.clear()
-            if self._running:
+            if self._running and not self.options_menu.is_visible and not self.stats_screen.is_visible:
                 self.batch.draw()
             self.hud_batch.draw()
+
+            if not self.options_menu.is_visible and not self.stats_screen.is_visible:
+                if self._running:
+                    self.batch.draw()
+                self.hud_batch.draw()
+            else:
+                self.hud_batch.draw()
 
         @self.window.event
         def on_mouse_motion(x, y, dx, dy):
@@ -235,6 +243,7 @@ class Game:
 
     def _on_options(self):
         self.main_menu.hide()
+        self.hud.hide()
         self.options_menu.show()
 
     def _on_back_to_main(self):

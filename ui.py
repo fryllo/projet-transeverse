@@ -129,7 +129,7 @@ class MainMenu:
 
         # ── titre ─────────────────────────────────────────────────────────────
         self._title = make_label(
-            "PLATFORMER",
+            "Cop Adventure",
             cx, height - 120,
             batch, group=self._grp_fg,
             font_name=FONT_TITLE, font_size=SIZE_TITLE,
@@ -137,7 +137,7 @@ class MainMenu:
             anchor_x="center", anchor_y="center",
         )
         self._subtitle = make_label(
-            "— engine demo —",
+            "— Are you ready ? —",
             cx, height - 165,
             batch, group=self._grp_fg,
             font_size=13, color=COLOR_TEXT_DIM,
@@ -162,7 +162,7 @@ class MainMenu:
 
         # ── crédits ───────────────────────────────────────────────────────────
         self._credits = make_label(
-            "Arrows / WASD · Space to jump",
+            "Arrows / ZQSD · Space to jump",
             cx, 22, batch, group=self._grp_fg,
             font_size=12, color=COLOR_TEXT_DIM,
             anchor_x="center", anchor_y="bottom",
@@ -175,6 +175,8 @@ class MainMenu:
         self._visible = True
         self._bg.opacity = 230
         self._credits.opacity = 180
+        self._title.color = (*COLOR_ACCENT[:3], 255)  # ← remet le titre
+        self._subtitle.color = (*COLOR_TEXT_DIM[:3], 255)  # ← remet le sous-titre
         for btn in self._buttons:
             btn.set_visible(True)
 
@@ -182,6 +184,8 @@ class MainMenu:
         self._visible = False
         self._bg.opacity = 0
         self._credits.opacity = 0
+        self._title.color = (*COLOR_ACCENT[:3], 0)  # ← cache le titre
+        self._subtitle.color = (*COLOR_TEXT_DIM[:3], 0)  # ← cache le sous-titre
         for btn in self._buttons:
             btn.set_visible(False)
 

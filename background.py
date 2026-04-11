@@ -56,7 +56,7 @@ class StaticImageLayer:
         self.sprite.scale_x = self.screen_w / self.image.width
         self.sprite.scale_y = self.screen_h / self.image.height
 
-    def update(self, camera_x): pass   # statique, ne bouge pas
+    def update(self, camera_x): pass
 
     def on_resize(self, width, height):
         self.screen_w = width

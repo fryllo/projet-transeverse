@@ -4,7 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="42b37434-76ba-430e-acd7-c42e563fb9a6" name="Changes" comment="sucez" />
+    <list default="true" id="42b37434-76ba-430e-acd7-c42e563fb9a6" name="Changes" comment="sucez">
+      <change afterPath="$PROJECT_DIR$/musique/MG.mp3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sound.py" beforeDir="false" afterPath="$PROJECT_DIR$/sound.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -72,7 +77,7 @@
     "git-widget-placeholder": "main",
     "ignore.virus.scanning.warn.message": "true",
     "junie.onboarding.icon.badge.shown": "true",
-    "last_opened_file_path": "C:/Users/louis/projet-transeverse/assets",
+    "last_opened_file_path": "C:/Users/louis/projet-transeverse/musique",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -93,10 +98,11 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\louis\projet-transeverse\musique" />
       <recent name="C:\Users\louis\projet-transeverse\assets" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.moteur">
+  <component name="RunManager">
     <configuration name="moteur" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="projet-transeverse" />
       <option name="ENV_FILES" value="" />
@@ -251,7 +257,15 @@
       <option name="project" value="LOCAL" />
       <updated>1775925368737</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="sucez">
+      <option name="closed" value="true" />
+      <created>1775925835793</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1775925835793</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

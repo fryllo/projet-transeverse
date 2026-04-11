@@ -9,7 +9,6 @@ from menus   import OptionsMenu, StatsScreen
 from enemies import EnemyManager, Projectile
 from level_system import LevelManager
 from ui import MainMenu, LevelSelect, Button, GameOverMenu
-from hub import Hub
 
 son_pas  = pyglet.media.load("musique/bruit_de_pas.wav", streaming=False)
 son_saut = pyglet.media.load("musique/saut.flac",        streaming=False)
@@ -192,13 +191,12 @@ class PlayerSprite:
 class Player(Entity):
     def __init__(self, x, y, batch):
         super().__init__(x, y, 40, 60, batch)
-        self.hp               = 10
-        self.jumps            = 0
-        self.deaths           = 0
-        self.hitstun          = 0.0
-        self._jumps_left      = 2    # sauts disponibles (2 = double saut)
-        self.shape.visible    = False
-        self.sprite_anim      = PlayerSprite(batch)
+        self.hp          = 10
+        self.jumps       = 0
+        self.deaths      = 0
+        self.hitstun     = 0.0   # invincibilité en secondes
+        self.shape.visible = False
+        self.sprite_anim = PlayerSprite(batch)
 
     def update(self, dt):
         pass
@@ -306,9 +304,6 @@ class PhysicsWorld:
             e.y += e.vel_y * dt
             e.on_ground = False
             self._resolve(e, "y")
-            # Réinitialiser les sauts disponibles quand on touche le sol
-            if e.on_ground and hasattr(e, '_jumps_left'):
-                e._jumps_left = 1
             e.sync_graphics()
 
     @staticmethod
@@ -435,10 +430,7 @@ class Game:
         self.level_manager = LevelManager(self)
         self.level_manager.load(0)
         self.enemy_manager.set_world(self.world.entities)
-        self._load_player_mount(0)
-        # Hub de sélection
-        self._hub        = Hub(self, self._enter_level_from_hub)
-        self._in_hub     = False
+        self._load_player_mount(0)   # charge le sprite selon le niveau
 
         self._build_ui()
         self.main_menu.show()
@@ -460,17 +452,6 @@ class Game:
             if symbol == key.TAB and self._running:
                 self.level_manager.next_level()
                 self._load_player_mount(self.level_manager.index)
-            if symbol == key.I and self._running:
-                self._invincible = not getattr(self, '_invincible', False)
-                print(f"[INVINCIBLE] {'ON' if self._invincible else 'OFF'}")
-            # Double saut (déclenché sur pression unique, pas en hold)
-            if (symbol in (key.SPACE, key.UP, key.Z) and self._running):
-                p = self.player
-                if not p.on_ground and p._jumps_left > 0 and p.hitstun <= 0:
-                    p.vel_y       = JUMP_FORCE * 0.85   # légèrement moins fort
-                    p._jumps_left -= 1
-                    p.jumps      += 1
-                    self.son_saut.play()
 
         @self.window.event
         def on_key_release(symbol, modifiers):
@@ -592,27 +573,8 @@ class Game:
             self.options_menu.hide()
             self.stats_screen.hide()
             self.hud.hide()
-            self._start_hub()
-
-    def _start_hub(self):
-        """Lance le hub de sélection de niveau."""
-        self._hub = Hub(self, self._enter_level_from_hub)
-        self._hub.load()
-        self._load_player_mount(0)   # cheval par défaut dans le hub
-        self.hud.show()
-        self.camera.reset()
-        self._held.clear()
-        self.player_projectiles.clear()
-        self._shoot_timer = 0.0
-        self.exit_btn.set_visible(False)
-        self._in_hub  = True
-        self._running = True
-
-    def _enter_level_from_hub(self, level_index):
-        """Appelé quand le joueur entre dans un portail du hub."""
-        self._hub.hide()
-        self._in_hub = False
-        self._on_start_level(level_index)
+            self.level_menu.show()
+            self._running = False
 
     def _on_start_level(self, level_index):
         self.level_menu.hide()
@@ -705,7 +667,7 @@ class Game:
         Si le joueur n'est pas en hitstun et qu'une hitbox le touche :
           → -1 PV + hitstun selon la source
         """
-        if p.hitstun > 0 or getattr(self, '_invincible', False):
+        if p.hitstun > 0:
             return   # invincible
 
         def rect_hit(ex, ey, ew, eh):
@@ -786,7 +748,7 @@ class Game:
         if not self._running:
             return
 
-        if not self._in_hub and self.player.x > self.level_manager.current_level.length - 80:
+        if self.player.x > self.level_manager.current_level.length - 80:
             self.level_manager.next_level()
             self._load_player_mount(self.level_manager.index)
 
@@ -807,10 +769,9 @@ class Game:
 
             # ── Saut ──────────────────────────────────────────────────────────
             if (key.SPACE in self._held or key.UP in self._held or key.Z in self._held) and p.on_ground:
-                p.vel_y        = JUMP_FORCE
-                p.on_ground    = False
-                p._jumps_left  = 1   # il reste 1 saut (le double saut)
-                p.jumps       += 1
+                p.vel_y     = JUMP_FORCE
+                p.on_ground = False
+                p.jumps    += 1
                 self.son_saut.play()
 
         # ── Sons de pas ───────────────────────────────────────────────────────
@@ -834,10 +795,7 @@ class Game:
         self.enemy_manager.update(dt, p)
         self._check_damage(p)
         self._update_player_projectiles(dt)
-        if self._in_hub:
-            self._hub.update(dt, p, self.camera.offset_x)
-        else:
-            self.level_manager.update_background()
+        self.level_manager.update_background()
 
         # ── Mort du joueur ────────────────────────────────────────────────────
         if p.hp <= 0:

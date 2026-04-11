@@ -1,4 +1,5 @@
 from moteur import Game
+from npc import NPC
 import pyglet
 
 

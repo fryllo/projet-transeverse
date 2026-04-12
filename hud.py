@@ -160,5 +160,10 @@ class HUD:
         if self._stats:
             self._stats.update(player)
 
-    def show(self): self._visible = True
-    def hide(self): self._visible = False
+    def show(self):
+        self._visible = True
+        self._grp.visible = True
+
+    def hide(self):
+        self._visible = False
+        self._grp.visible = False

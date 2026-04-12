@@ -8,7 +8,7 @@ from hud     import HUD
 from menus   import OptionsMenu, StatsScreen
 from enemies import EnemyManager, Projectile
 from level_system import LevelManager
-from ui import MainMenu, LevelSelect, Button, GameOverMenu
+from ui import MainMenu, LevelSelect, Button, GameOverMenu, VictoryScreen
 
 son_pas  = pyglet.media.load("musique/bruit_de_pas.wav", streaming=False)
 son_saut = pyglet.media.load("musique/saut.flac",        streaming=False)
@@ -490,6 +490,8 @@ class Game:
         def on_mouse_press(x, y, button, modifiers):
             if self.game_over_menu._visible:
                 self.game_over_menu.on_mouse_press(x, y, button, modifiers)
+            elif self.victory_screen._visible:
+                self.victory_screen.on_mouse_press(x, y, button, modifiers)
             elif self.level_menu._visible:
                 self.level_menu.on_mouse_press(x, y, button, modifiers)
             elif self.options_menu.is_visible:
@@ -505,6 +507,8 @@ class Game:
         def on_mouse_release(x, y, button, modifiers):
             if self.game_over_menu._visible:
                 self.game_over_menu.on_mouse_release(x, y, button, modifiers)
+            elif self.victory_screen._visible:
+                self.victory_screen.on_mouse_release(x, y, button, modifiers)
             elif self.level_menu._visible:
                 self.level_menu.on_mouse_release(x, y, button, modifiers)
             elif self.options_menu.is_visible:
@@ -520,6 +524,8 @@ class Game:
         def on_mouse_motion(x, y, dx, dy):
             if self.main_menu._visible:
                 self.main_menu.on_mouse_motion(x, y, dx, dy)
+            elif self.victory_screen._visible:
+                self.victory_screen.on_mouse_motion(x, y, dx, dy)
             elif self.level_menu._visible:
                 self.level_menu.on_mouse_motion(x, y, dx, dy)
             elif self.options_menu.is_visible:
@@ -585,6 +591,7 @@ class Game:
         self.level_menu   = LevelSelect(w, h, self.hud_batch, on_level_selected=self._on_start_level)
         self.options_menu = OptionsMenu(w, h, self.hud_batch, on_back=self._on_back_to_main)
         self.stats_screen = StatsScreen(w, h, self.hud_batch, on_back=self._on_back_to_main)
+        self.victory_screen = VictoryScreen(w, h, self.hud_batch, on_menu=self._on_back_to_main)
 
     # ── Callbacks ─────────────────────────────────────────────────────────────
 
@@ -641,6 +648,13 @@ class Game:
             self.exit_btn.set_visible(True)
             self._running = True
 
+    def _on_victory(self):
+        """Fin du jeu — affiche l'écran de victoire."""
+        self._running = False
+        self.hud.hide()
+        self.exit_btn.set_visible(False)
+        self.victory_screen.show()
+
     def _on_options(self):
         self.main_menu.hide()
         self.options_menu.show()
@@ -652,6 +666,7 @@ class Game:
         self.stats_screen.hide()
         self.level_menu.hide()
         self.game_over_menu.hide()
+        self.victory_screen.hide()
         self.exit_btn.set_visible(False)
         self.hud.hide()
         self.main_menu.show()
@@ -784,9 +799,13 @@ class Game:
         if not self._running:
             return
 
-        if not self.level_manager._hub_active and self.player.x > self.level_manager.current_level.length - 80:
-            self.level_manager.next_level()
-            self._load_player_mount(self.level_manager.index)
+        if not self.level_manager._hub_active and self.player.x > 7000:
+            if self.level_manager.index == 2:
+                self._on_victory()
+                return
+            else:
+                self._start_hub()
+                return
 
         self._time += dt
         p = self.player

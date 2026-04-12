@@ -21,6 +21,66 @@ from theme import (
 
 # ── Bouton générique ───────────────────────────────────────────────────────────
 
+class VictoryScreen:
+    PANEL_W = 480
+    PANEL_H = 320
+
+    def __init__(self, width, height, batch, on_menu=None):
+        self._visible = False
+        self._grp_bg  = pyglet.graphics.Group(order=40)
+        self._grp_fg  = pyglet.graphics.Group(order=41)
+
+        cx, cy = width // 2, height // 2
+        px, py = cx - self.PANEL_W // 2, cy - self.PANEL_H // 2
+
+        self._panel = draw_panel(px, py, self.PANEL_W, self.PANEL_H, batch, self._grp_bg)
+        self._panel.opacity = 0
+
+        self._title = make_label(
+            "BIEN JOUÉ !",
+            cx, py + self.PANEL_H - 60,
+            batch, self._grp_fg,
+            font_name=FONT_TITLE, font_size=SIZE_TITLE,
+            color=(255, 220, 50, 0),
+            anchor_x="center", anchor_y="center",
+        )
+        self._subtitle = make_label(
+            "Tu as sauvé les 3 zones !\nGreta est fière de toi 🌱",
+            cx, cy + 20,
+            batch, self._grp_fg,
+            font_size=SIZE_BODY,
+            color=(200, 255, 180, 0),
+            anchor_x="center", anchor_y="center",
+        )
+        self._btn = Button(cx - 100, py + 30, 200, 50, "MENU PRINCIPAL",
+                           batch, self._grp_bg, self._grp_fg, on_click=on_menu)
+        self.hide()
+
+    def show(self):
+        self._visible = True
+        self._panel.opacity = 230
+        self._title.color   = (255, 220, 50, 255)
+        self._subtitle.color = (200, 255, 180, 255)
+        self._btn.set_visible(True)
+
+    def hide(self):
+        self._visible = False
+        self._panel.opacity  = 0
+        self._title.color    = (255, 220, 50, 0)
+        self._subtitle.color = (200, 255, 180, 0)
+        self._btn.set_visible(False)
+
+    def on_mouse_press(self, x, y, button, modifiers):
+        if self._visible:
+            self._btn.on_mouse_press(x, y, button, modifiers)
+
+    def on_mouse_release(self, x, y, button, modifiers):
+        if self._visible:
+            self._btn.on_mouse_release(x, y, button, modifiers)
+
+    def on_mouse_motion(self, x, y, dx, dy):
+        if self._visible:
+            self._btn.on_mouse_motion(x, y, dx, dy)
 
 class Button:
     """Bouton rectangulaire cliquable avec état hover / pressed."""

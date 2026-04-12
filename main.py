@@ -4,7 +4,7 @@ import pyglet
 
 
 
-musique = pyglet.media.load("musique/PIANO.wav")
+musique = pyglet.media.load("musique/PIANO.wav.")
 player_musique = pyglet.media.Player()
 player_musique.queue(musique)
 player_musique.loop = True

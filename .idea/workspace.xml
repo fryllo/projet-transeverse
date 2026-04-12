@@ -5,10 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="42b37434-76ba-430e-acd7-c42e563fb9a6" name="Changes" comment="zbi">
+      <change afterPath="$PROJECT_DIR$/musique/EM.ogg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/musique/GIMS.mp3" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/musique/PG.opus" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/level_system.py" beforeDir="false" afterPath="$PROJECT_DIR$/level_system.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/musique/son.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/sound.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/moteur.py" beforeDir="false" afterPath="$PROJECT_DIR$/moteur.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/npc.py" beforeDir="false" afterPath="$PROJECT_DIR$/npc.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -296,7 +300,15 @@
       <option name="project" value="LOCAL" />
       <updated>1776024742343</updated>
     </task>
-    <option name="localTasksCounter" value="15" />
+    <task id="LOCAL-00015" summary="zbi">
+      <option name="closed" value="true" />
+      <created>1776025145996</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1776025145996</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

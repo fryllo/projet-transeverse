@@ -2,7 +2,7 @@ from moteur import Game
 from npc import NPC
 import pyglet
 
-musique = pyglet.media.load("musique/MG.mp3", streaming=False)
+musique = pyglet.media.load("musique/PIANO.wav", streaming=False)
 
 
 player_musique = pyglet.media.Player()

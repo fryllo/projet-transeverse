@@ -574,19 +574,23 @@ class Game:
 
         self.hud = HUD(w, h, self.hud_batch, max_hp=10, show_stats=True)
 
+
         self.game_over_menu = GameOverMenu(w, h, self.hud_batch,
                                            on_retry=self._on_retry,
                                            on_menu=self._on_back_to_main)
 
-        self.exit_btn = Button(16, h - 110, 80, 40, "Menu",
+        self.exit_btn = Button(16, h - 110, 80, 40, "MENU",
                                self.hud_batch, self.hud._grp, self.hud._grp,
                                on_click=self._on_exit_to_levels)
         self.exit_btn.set_visible(False)
 
-        self.main_menu = MainMenu(w, h, self.hud_batch,
-                                  on_play=self._on_play,
-                                  on_options=self._on_options,
-                                  on_quit=pyglet.app.exit)
+        self.main_menu = MainMenu(
+            w, h, self.hud_batch,
+            on_play=self._on_play,
+            on_options=self._on_options,
+            on_quit=pyglet.app.exit,
+            bg_path="assets/menu_bg.png"
+        )
 
         self.level_menu   = LevelSelect(w, h, self.hud_batch, on_level_selected=self._on_start_level)
         self.options_menu = OptionsMenu(w, h, self.hud_batch, on_back=self._on_back_to_main)

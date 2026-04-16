@@ -18,7 +18,7 @@ from theme import (
     make_label, draw_panel, draw_border,
 
 )
-
+from pyglet.gl import GL_NEAREST
 # ── Bouton générique ───────────────────────────────────────────────────────────
 
 class VictoryScreen:
@@ -155,42 +155,55 @@ class Button:
 # ── Menu principal ─────────────────────────────────────────────────────────────
 
 class MainMenu:
-    """
-    Superpose un menu principal sur la fenêtre de jeu.
-
-    Paramètres
-    ----------
-    width, height   : dimensions de la fenêtre
-    batch           : pyglet.graphics.Batch partagé
-    on_play         : callback bouton Play
-    on_options      : callback bouton Options
-    on_quit         : callback bouton Quit
-    """
-
     BTN_W = 260
     BTN_H = 52
     BTN_GAP = 18
 
     def __init__(self, width, height, batch,
-                 on_play=None, on_options=None, on_quit=None):
+                 on_play=None, on_options=None, on_quit=None,
+                 bg_path=None):
         self.width = width
         self.height = height
         self._visible = False
+        self._batch = batch
+        self._bg_path = bg_path
 
-        # groupes de rendu (menu au-dessus du jeu)
-        self._grp_bg  = pyglet.graphics.Group(order=10)
+        # Ordres de rendu
+        self._grp_bg_img = pyglet.graphics.Group(order=9)
+        self._grp_bg = pyglet.graphics.Group(order=10)
         self._grp_mid = pyglet.graphics.Group(order=11)
-        self._grp_fg  = pyglet.graphics.Group(order=12)
+        self._grp_fg = pyglet.graphics.Group(order=12)
 
         cx = width // 2
 
-        # ── fond opaque ───────────────────────────────────────────────────────
-        self._bg = shapes.Rectangle(0, 0, width, height,
-                                    color=COLOR_BG[:3],
-                                    batch=batch, group=self._grp_bg)
+        # Image de fond
+        self._bg_sprite = None
+        if bg_path:
+            try:
+                img = pyglet.image.load(bg_path)
+                tex = img.get_texture()
+                tex.min_filter = GL_NEAREST
+                tex.mag_filter = GL_NEAREST
+
+                self._bg_sprite = pyglet.sprite.Sprite(
+                    img, x=0, y=0,
+                    batch=batch, group=self._grp_bg_img
+                )
+                self._fit_background()
+                self._bg_sprite.visible = False
+            except Exception as e:
+                print(f"[MainMenu] fond non chargé : {e}")
+                self._bg_sprite = None
+
+        # Overlay sombre pour lisibilité
+        self._bg = shapes.Rectangle(
+            0, 0, width, height,
+            color=COLOR_BG[:3],
+            batch=batch, group=self._grp_bg
+        )
         self._bg.opacity = 0
 
-        # ── titre ─────────────────────────────────────────────────────────────
+        # Titre
         self._title = make_label(
             "Cop Adventure",
             cx, height - 120,
@@ -207,23 +220,25 @@ class MainMenu:
             anchor_x="center", anchor_y="center",
         )
 
-        # ── boutons ───────────────────────────────────────────────────────────
-        labels   = ["▶  PLAY",  "⚙  OPTIONS", "✕  QUIT"]
+        # Boutons
+        labels = ["▶ PLAY", "⚙ OPTIONS", "✕ QUIT"]
         callbacks = [on_play, on_options, on_quit]
-        total_h  = len(labels) * (self.BTN_H + self.BTN_GAP) - self.BTN_GAP
-        start_y  = (height - total_h) // 2
+        total_h = len(labels) * (self.BTN_H + self.BTN_GAP) - self.BTN_GAP
+        start_y = (height - total_h) // 2
 
         self._buttons = []
         for i, (txt, cb) in enumerate(zip(labels, callbacks)):
             by = start_y + (len(labels) - 1 - i) * (self.BTN_H + self.BTN_GAP)
             bx = cx - self.BTN_W // 2
-            btn = Button(bx, by, self.BTN_W, self.BTN_H, txt,
-                         batch, self._grp_mid, self._grp_fg,
-                         on_click=cb)
+            btn = Button(
+                bx, by, self.BTN_W, self.BTN_H, txt,
+                batch, self._grp_mid, self._grp_fg,
+                on_click=cb
+            )
             btn.set_visible(False)
             self._buttons.append(btn)
 
-        # ── crédits ───────────────────────────────────────────────────────────
+        # Crédits
         self._credits = make_label(
             "Arrows / WASD · Space to jump",
             cx, 22, batch, group=self._grp_fg,
@@ -232,13 +247,68 @@ class MainMenu:
         )
         self._credits.opacity = 0
 
-    # ── visibilité ────────────────────────────────────────────────────────────
+        # Caché par défaut
+        self._title.opacity = 0
+        self._subtitle.opacity = 0
 
-    # Dans ui.py -> classe MainMenu
+    def _fit_background(self):
+        if not self._bg_sprite:
+            return
+
+        img = self._bg_sprite.image
+        sx = self.width / img.width
+        sy = self.height / img.height
+        scale = max(sx, sy)
+
+        self._bg_sprite.scale = scale
+
+        drawn_w = img.width * scale
+        drawn_h = img.height * scale
+        self._bg_sprite.x = (self.width - drawn_w) / 2
+        self._bg_sprite.y = (self.height - drawn_h) / 2
+
+    def set_background(self, bg_path):
+        self._bg_path = bg_path
+
+        if self._bg_sprite:
+            try:
+                self._bg_sprite.delete()
+            except:
+                pass
+            self._bg_sprite = None
+
+        if not bg_path:
+            return
+
+        try:
+            img = pyglet.image.load(bg_path)
+            tex = img.get_texture()
+            tex.min_filter = GL_NEAREST
+            tex.mag_filter = GL_NEAREST
+
+            self._bg_sprite = pyglet.sprite.Sprite(
+                img, x=0, y=0,
+                batch=self._batch, group=self._grp_bg_img
+            )
+            self._fit_background()
+            self._bg_sprite.visible = self._visible
+        except Exception as e:
+            print(f"[MainMenu] fond non chargé : {e}")
+
+    def on_resize(self, width, height):
+        self.width = width
+        self.height = height
+
+        self._bg.width = width
+        self._bg.height = height
+        self._fit_background()
 
     def show(self):
         self._visible = True
-        self._bg.opacity = 230
+        if self._bg_sprite:
+            self._bg_sprite.visible = True
+            self._bg_sprite.opacity = 255
+        self._bg.opacity = 140
         self._credits.opacity = 180
         self._title.opacity = 255
         self._subtitle.opacity = 255
@@ -247,6 +317,8 @@ class MainMenu:
 
     def hide(self):
         self._visible = False
+        if self._bg_sprite:
+            self._bg_sprite.visible = False
         self._bg.opacity = 0
         self._credits.opacity = 0
         self._title.opacity = 0
@@ -257,8 +329,6 @@ class MainMenu:
     @property
     def is_visible(self):
         return self._visible
-
-    # ── handlers souris (à brancher sur la fenêtre) ──────────────────────────
 
     def on_mouse_motion(self, x, y, dx, dy):
         if not self._visible:

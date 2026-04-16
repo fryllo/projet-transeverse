@@ -578,7 +578,7 @@ class Game:
                                            on_retry=self._on_retry,
                                            on_menu=self._on_back_to_main)
 
-        self.exit_btn = Button(16, h - 110, 80, 40, "Menu",
+        self.exit_btn = Button(16, h - 110, 80, 40, "PORTIER",
                                self.hud_batch, self.hud._grp, self.hud._grp,
                                on_click=self._on_exit_to_levels)
         self.exit_btn.set_visible(False)
@@ -654,6 +654,18 @@ class Game:
         self.hud.hide()
         self.exit_btn.set_visible(False)
         self.victory_screen.show()
+        # Couper la musique principale
+        try:
+            if hasattr(self, '_player_musique') and self._player_musique:
+                self._player_musique.pause()
+        except:
+            pass
+        try:
+            gims = pyglet.media.load("musique/GIMS.mp3", streaming=False)
+            p = gims.play()
+            p.volume = 2.0
+        except Exception as e:
+            print(f"[VICTOIRE] son : {e}")
 
     def _on_options(self):
         self.main_menu.hide()

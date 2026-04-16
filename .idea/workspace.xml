@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="42b37434-76ba-430e-acd7-c42e563fb9a6" name="Changes" comment="derniere modif">
+    <list default="true" id="42b37434-76ba-430e-acd7-c42e563fb9a6" name="Changes" comment="masterclass">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -29,7 +29,6 @@
       </list>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
-    <option name="UPDATE_TYPE" value="REBASE" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
   &quot;lastFilter&quot;: {
@@ -40,7 +39,7 @@
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
     &quot;url&quot;: &quot;https://github.com/fryllo/projet-transeverse.git&quot;,
-    &quot;accountId&quot;: &quot;9969bbac-f1a3-433e-a32e-97e5fd4d7d37&quot;
+    &quot;accountId&quot;: &quot;5271f956-160d-4a6a-8e8f-51976422b761&quot;
   }
 }</component>
   <component name="HighlightingSettingsPerFile">
@@ -99,7 +98,7 @@
       <recent name="C:\Users\louis\projet-transeverse\assets" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.moteur">
+  <component name="RunManager">
     <configuration name="moteur" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="projet-transeverse" />
       <option name="ENV_FILES" value="" />
@@ -159,8 +158,7 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-d6986cc7102b-a71380e98a7c-JavaScript-PY-252.28238.29" />
-        <option value="bundled-python-sdk-a101402ee41c-968fe969f28a-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-252.28238.29" />
+        <option value="bundled-python-sdk-4e2b1448bda8-9a97661f3031-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-252.27397.106" />
       </set>
     </attachedChunks>
   </component>
@@ -181,7 +179,6 @@
       <workItem from="1775506094456" duration="119000" />
       <workItem from="1775506805082" duration="3467000" />
       <workItem from="1775736763708" duration="6073000" />
-      <workItem from="1776024940114" duration="35000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit">
       <option name="closed" value="true" />
@@ -279,15 +276,63 @@
       <option name="project" value="LOCAL" />
       <updated>1775948248600</updated>
     </task>
-    <task id="LOCAL-00013" summary="derniere modif">
+    <task id="LOCAL-00013" summary="zbi">
       <option name="closed" value="true" />
-      <created>1776024655591</created>
+      <created>1776017910844</created>
       <option name="number" value="00013" />
       <option name="presentableId" value="LOCAL-00013" />
       <option name="project" value="LOCAL" />
-      <updated>1776024655591</updated>
+      <updated>1776017910844</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="zbi">
+      <option name="closed" value="true" />
+      <created>1776024742343</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1776024742343</updated>
+    </task>
+    <task id="LOCAL-00015" summary="zbi">
+      <option name="closed" value="true" />
+      <created>1776025145996</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1776025145996</updated>
+    </task>
+    <task id="LOCAL-00016" summary="masterclass">
+      <option name="closed" value="true" />
+      <created>1776031037696</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1776031037696</updated>
+    </task>
+    <task id="LOCAL-00017" summary="masterclass">
+      <option name="closed" value="true" />
+      <created>1776031842714</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1776031842714</updated>
+    </task>
+    <task id="LOCAL-00018" summary="masterclass">
+      <option name="closed" value="true" />
+      <created>1776067999473</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1776067999473</updated>
+    </task>
+    <task id="LOCAL-00019" summary="masterclass">
+      <option name="closed" value="true" />
+      <created>1776080880697</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1776080880698</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -310,21 +355,22 @@
     <MESSAGE value="hjbh" />
     <MESSAGE value="test pr éviter de tout perdre" />
     <MESSAGE value="sucez" />
-    <MESSAGE value="derniere modif" />
-    <option name="LAST_COMMIT_MESSAGE" value="derniere modif" />
+    <MESSAGE value="zbi" />
+    <MESSAGE value="masterclass" />
+    <option name="LAST_COMMIT_MESSAGE" value="masterclass" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/projet_transeverse$moteur.coverage" NAME="moteur Coverage Results" MODIFIED="1776024940652" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/projet_transeverse$main.coverage" NAME="main Coverage Results" MODIFIED="1775557584030" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/projet_transeverse$background.coverage" NAME="background Coverage Results" MODIFIED="1775510272612" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/projet_transeverse$moteur__3_.coverage" NAME="moteur (3) Coverage Results" MODIFIED="1774012574185" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/../Downloads" />
-    <SUITE FILE_PATH="coverage/projet_transeverse$ui.coverage" NAME="ui Coverage Results" MODIFIED="1775504515580" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/projet_transeverse$moteur.coverage" NAME="moteur Coverage Results" MODIFIED="1775558273722" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/projet_transeverse$level_system.coverage" NAME="level_system Coverage Results" MODIFIED="1775508297633" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/projet_transeverse$menus.coverage" NAME="menus Coverage Results" MODIFIED="1775557109280" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/projet_transeverse$moteur__1_.coverage" NAME="moteur (1) Coverage Results" MODIFIED="1773309136085" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/../Downloads" />
     <SUITE FILE_PATH="coverage/projet_transeverse$moteur__2_.coverage" NAME="moteur (2) Coverage Results" MODIFIED="1774011834084" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/../Downloads" />
     <SUITE FILE_PATH="coverage/projet_transeverse$theme.coverage" NAME="theme Coverage Results" MODIFIED="1775489523970" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/projet_transeverse$level_system.coverage" NAME="level_system Coverage Results" MODIFIED="1775508297633" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/projet_transeverse$pnj.coverage" NAME="pnj Coverage Results" MODIFIED="1775490027987" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/projet_transeverse$moteur__3_.coverage" NAME="moteur (3) Coverage Results" MODIFIED="1774012574185" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/../Downloads" />
+    <SUITE FILE_PATH="coverage/projet_transeverse$background.coverage" NAME="background Coverage Results" MODIFIED="1775510272612" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/projet_transeverse$ui.coverage" NAME="ui Coverage Results" MODIFIED="1775504515580" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/projet_transeverse$moteur__1_.coverage" NAME="moteur (1) Coverage Results" MODIFIED="1773309136085" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/../Downloads" />
     <SUITE FILE_PATH="coverage/projet_transeverse$son.coverage" NAME="son Coverage Results" MODIFIED="1775555641244" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/musique" />
   </component>
 </project>

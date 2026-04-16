@@ -484,20 +484,20 @@ class LevelManager:
         # PNJ dans les niveaux (2 par niveau, dialogue vide)
         level_npcs = {
             "ground": [
-                (800,  40, "assets/npc_champignon.png"),
-                (3000, 40, "assets/npc_champignon.png"),
+                (800,  60, "assets/npc_champignon.png", False),
+                (3000, 60, "assets/npc_champignon.png", False),
             ],
             "water": [
-                (900,  40, "assets/npc_poisson.png"),
-                (3200, 40, "assets/npc_poisson.png"),
+                (900,  60, "assets/npc_poisson.png", False),
+                (3200, 60, "assets/npc_poisson.png", True),
             ],
             "sky": [
-                (1000, 40, "assets/npc_oiseau.png"),
-                (3500, 40, "assets/npc_oiseau.png"),
+                (1000, 60, "assets/npc_oiseau.png", False),
+                (3500, 60, "assets/npc_oiseau.png", False),
             ],
         }
-        for nx, ny, spr in level_npcs.get(level.theme, []):
-            self._npcs.append(NPC(nx, ny, spr, "", self.game.batch))
+        for nx, ny, spr, snd in level_npcs.get(level.theme, []):
+            self._npcs.append(NPC(nx, ny, spr, "", self.game.batch, sound=snd))
 
         if level.theme == "ground":
             self._current_bg = BackgroundBuilder.create_ground(self.game.window.width, self.game.window.height, self.game.bg_batch)

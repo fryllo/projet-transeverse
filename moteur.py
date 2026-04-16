@@ -578,7 +578,7 @@ class Game:
                                            on_retry=self._on_retry,
                                            on_menu=self._on_back_to_main)
 
-        self.exit_btn = Button(16, h - 110, 80, 40, "PORTIER",
+        self.exit_btn = Button(16, h - 110, 80, 40, "Menu",
                                self.hud_batch, self.hud._grp, self.hud._grp,
                                on_click=self._on_exit_to_levels)
         self.exit_btn.set_visible(False)

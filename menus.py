@@ -19,15 +19,24 @@ class Slider:
     TRACK_H = 6
     THUMB_R = 10
 
-    def __init__(self, x, y, w, label, value, batch, group_bg=None, group_fg=None,
-                 on_change=None):
+    def __init__(
+        self,
+        x, y, w, label, value, batch,
+        group_bg=None, group_fg=None,
+        on_change=None,
+        label_right_x=None,
+        value_x=None
+    ):
         self.x, self.y, self.w = x, y, w
         self._value = max(0.0, min(1.0, value))
         self.on_change = on_change
         self._dragging = False
         self._visible = True
 
+        label_x = label_right_x if label_right_x is not None else x - 12
+        value_label_x = value_x if value_x is not None else x + w + 12
         track_y = y + self.THUMB_R - self.TRACK_H // 2
+
         self._track_bg = shapes.Rectangle(
             x, track_y, w, self.TRACK_H,
             color=COLOR_BTN_NORMAL[:3],
@@ -40,11 +49,13 @@ class Slider:
         )
         self._thumb = shapes.Circle(
             x + int(w * self._value), y + self.THUMB_R,
-            self.THUMB_R, color=COLOR_ACCENT[:3],
+            self.THUMB_R,
+            color=COLOR_ACCENT[:3],
             batch=batch, group=group_fg
         )
+
         self._label = make_label(
-            label, x - 12, y + self.THUMB_R,
+            label, label_x, y + self.THUMB_R,
             batch, group_fg,
             font_name=FONT_UI, font_size=SIZE_SMALL,
             color=COLOR_TEXT,
@@ -52,7 +63,7 @@ class Slider:
         )
         self._val_label = make_label(
             f"{int(self._value * 100)}%",
-            x + w + 12, y + self.THUMB_R,
+            value_label_x, y + self.THUMB_R,
             batch, group_fg,
             font_name=FONT_MONO, font_size=SIZE_SMALL,
             color=COLOR_TEXT_DIM,
@@ -87,11 +98,15 @@ class Slider:
         )
 
     def on_mouse_press(self, x, y, button, modifiers):
-        if self._visible and self._hit(x, y):
-            self._dragging = True
+        if self._visible:
+            if self._hit(x, y):
+                self._dragging = True
+            elif self.x <= x <= self.x + self.w and self.y <= y <= self.y + self.THUMB_R * 2:
+                self._dragging = True
+                self._set_value((x - self.x) / self.w)
 
     def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
-        if self._dragging:
+        if self._visible and self._dragging:
             self._set_value((x - self.x) / self.w)
 
     def on_mouse_release(self, x, y, button, modifiers):
@@ -161,8 +176,8 @@ class MenuBackgroundMixin:
         img = self._bg_sprite.image
         sx = self._menu_w / img.width
         sy = self._menu_h / img.height
-
         scale = max(sx, sy)
+
         self._bg_sprite.scale = scale
 
         drawn_w = img.width * scale
@@ -188,7 +203,7 @@ class MenuBackgroundMixin:
 # ── OptionsMenu ────────────────────────────────────────────────────────────────
 
 class OptionsMenu(MenuBackgroundMixin):
-    PANEL_W = 480
+    PANEL_W = 360
     PANEL_H = 360
 
     def __init__(self, width, height, batch, on_back=None, bg_path=None):
@@ -209,6 +224,7 @@ class OptionsMenu(MenuBackgroundMixin):
         self._panel = draw_panel(px, py, self.PANEL_W, self.PANEL_H, batch, self._grp_bg)
         self._panel.opacity = 0
         self._borders = draw_border(px, py, self.PANEL_W, self.PANEL_H, 2, batch, self._grp_fg)
+
         self._title = make_label(
             "OPTIONS", cx, py + self.PANEL_H - 30,
             batch, self._grp_fg,
@@ -218,14 +234,25 @@ class OptionsMenu(MenuBackgroundMixin):
         )
 
         self._sliders = []
+
         configs = [
-            ("Musique", 0.70, "music_volume"),
-            ("Effets SFX", 0.90, "sfx_volume"),
-            ("Vitesse", 0.60, "player_speed")
+            ("Musique", 0.50, "music_volume"),
+            ("Effets", 0.50, "sfx_volume"),
         ]
+
+        label_right_x = px + 110
+        slider_x = px + 130
+        slider_w = 150
+        value_x = slider_x + slider_w + 14
+
         for i, (lbl, default, attr) in enumerate(configs):
             sy = py + self.PANEL_H - 120 - i * 70
-            s = Slider(cx + 40, sy, 180, lbl, default, batch, self._grp_mid, self._grp_fg)
+            s = Slider(
+                slider_x, sy, slider_w, lbl, default,
+                batch, self._grp_mid, self._grp_fg,
+                label_right_x=label_right_x,
+                value_x=value_x
+            )
             setattr(self, attr, s)
             self._sliders.append(s)
 
@@ -315,6 +342,7 @@ class StatsScreen(MenuBackgroundMixin):
         self._panel = draw_panel(px, py, self.PANEL_W, self.PANEL_H, batch, self._grp_bg)
         self._panel.opacity = 0
         self._borders = draw_border(px, py, self.PANEL_W, self.PANEL_H, 2, batch, self._grp_fg)
+
         self._title = make_label(
             "STATISTIQUES", cx, py + self.PANEL_H - 30,
             batch, self._grp_fg,
@@ -327,10 +355,11 @@ class StatsScreen(MenuBackgroundMixin):
         self._stat_labels = {}
         self._key_labels = []
 
-        for i, key in enumerate(stat_keys):
+        for i, key_name in enumerate(stat_keys):
             row_y = py + self.PANEL_H - 90 - i * 38
+
             kl = make_label(
-                key + "  :", px + 24, row_y,
+                key_name + "  :", px + 24, row_y,
                 batch, self._grp_fg,
                 font_name=FONT_UI, font_size=SIZE_SMALL,
                 color=COLOR_TEXT_DIM
@@ -342,8 +371,9 @@ class StatsScreen(MenuBackgroundMixin):
                 color=COLOR_TEXT,
                 anchor_x="right", anchor_y="bottom"
             )
+
             self._key_labels.append(kl)
-            self._stat_labels[key] = vl
+            self._stat_labels[key_name] = vl
 
         self._back_btn = Button(
             cx - 80, py + 16, 160, 44, "← RETOUR",
